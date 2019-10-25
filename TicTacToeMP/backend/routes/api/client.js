@@ -25,11 +25,11 @@ let campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
 
 io.on("connection", client => {
-    console.log("ioSocket connected");
+    // console.log("ioSocket connected");
     // globalVariables.ioConnection = socket;
 
     client.on("userRegistrationSuccess", data => {
-        console.log("the userRegistration succcess event was detected!");
+        // console.log("the userRegistration succcess event was detected!");
         //emits an event to the frontend
         io.sockets.emit("registrationSuccessful");
         // io.sockets.emit('registration successful', {msg: data});
@@ -92,52 +92,59 @@ function doMove(msg) {
     // MARCO NO CAMPO E ENVIO AO FRONT A INDICAÇÃO DE QUE É O TURNO DO USUARIO
     // E A POSIÇÃO EM QUE O SEU ADVERSÁRIO JOGOU
     campo[position.line][position.column] = 2;
-    io.emit('myTurn', position)
+    io.emit('myTurn', { position })
 }
 
-function endMatch(msg){
+function endMatch(msg) {
     client_TCP.destroy()
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("matchEnd")
 }
 
-function opponentWinGame(msg){
+function opponentWinGame(msg) {
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("opponentWin")
 }
 
-function gameTie(msg){
+function gameTie(msg) {
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("gameTie")
 }
 
-function playAgain(msg){
+function playAgain(msg) {
     io.emit('playAgain')
 }
 
-function playAgainAccepted(msg){
+function playAgainAccepted(msg) {
     io.emit('letsPlay')
 }
 
-function verifyTie(){
-    campo.forEach(pos => {
-        if(pos === 0){
-            return false
-        }
+function verifyTie() {
+    let checkIfExistAnyPosition = false
+    campo.forEach(position => {
+        position.forEach(pos => {
+            if (pos === 0) {
+                checkIfExistAnyPosition = true
+            }
+        })
     })
-    return true
+    if (checkIfExistAnyPosition) {
+        return false
+    } else {
+        return true
+    }
 }
 
-function checkIfWin(value){
-    if( (campo[0][0] === value && campo[0][1] === value && campo[0][2] === value) ||
+function checkIfWin(value) {
+    if ((campo[0][0] === value && campo[0][1] === value && campo[0][2] === value) ||
         (campo[1][0] === value && campo[1][1] === value && campo[1][2] === value) ||
         (campo[2][0] === value && campo[2][1] === value && campo[2][2] === value) ||
         (campo[0][0] === value && campo[1][0] === value && campo[2][0] === value) ||
         (campo[0][1] === value && campo[1][1] === value && campo[2][1] === value) ||
         (campo[0][2] === value && campo[1][2] === value && campo[2][2] === value) ||
         (campo[0][0] === value && campo[1][1] === value && campo[2][2] === value) ||
-        (campo[0][2] === value && campo[1][1] === value && campo[2][0] === value)){
-        
+        (campo[0][2] === value && campo[1][1] === value && campo[2][0] === value)) {
+
         campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         io.emit("youWin");
         client_TCP.write('OPWIN')
@@ -151,10 +158,10 @@ function checkIfWin(value){
 
 }
 
-function checkForEmptyPos(position){
-    if(campo[position.line][position.column] === 0){
+function checkForEmptyPos(position) {
+    if (campo[position.line][position.column] === 0) {
         campo[position.line][position.column] = 1;
-        if(!checkIfWin(1)){
+        if (!checkIfWin(1)) {
             client_TCP.write(`PLAY ${position.line} ${position.column}`)
         }
     } else {
@@ -279,7 +286,7 @@ function FormatlistUsers(msg) {
     list = newObject
 
     // if (!cadastro.inGame) {
-        io.emit("playersList", { list });
+    io.emit("playersList", { list });
     // }
 }
 
@@ -305,7 +312,6 @@ router.post('/startGame', (req, res) => {
     // client_TCP = net.createConnection({ req.body.port, }, () => {
 
     // })
-    console.log(opponent)
     // client_TCP.connect(parseInt(cadastro.user_port), cadastro.user_ip, () => {
     //     client_TCP.write(`START ${cadastro.user_name}`)
     // // })
