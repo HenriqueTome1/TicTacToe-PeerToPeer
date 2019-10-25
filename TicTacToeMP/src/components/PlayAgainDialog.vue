@@ -4,7 +4,7 @@
       <q-card style="width: 350px">
         <q-card-section class="row items-center no-wrap">
           <div>
-            <div class="text-weight-bold">O jogador {{ player }} que jogar {{ message }}</div>
+            <div class="text-weight-bold">O jogador {{ player }} que jogar novamente!</div>
             <div class="text-grey">Deseja aceitar?</div>
           </div>
 
@@ -33,9 +33,6 @@ export default {
     player: {
       type: String,
       required: true
-    },
-    message: {
-      type: String
     }
   },
   data() {

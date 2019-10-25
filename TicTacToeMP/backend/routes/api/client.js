@@ -101,6 +101,8 @@ function endMatch(msg) {
     client_TCP.destroy()
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("matchEnd")
+    intervalPresence = setInterval(doPresence, 5000);
+    intervalList = setInterval(doList, 5000);
 }
 
 function opponentWinGame(msg) {
@@ -319,7 +321,13 @@ router.post('/startGame', (req, res) => {
     // // })
     // console.log('user_port',cadastro.user_port)
     cadastro.inGame = true;
-    client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
+
+    clearInterval(intervalPresence);
+    clearInterval(intervalList);
+    intervalPresence = null;
+    intervalList = null
+
+    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
@@ -334,8 +342,14 @@ router.post('/gameAccepted', (req, res) => {
     client_TCP = new net.Socket();
     opponent = req.body.opponent;
     cadastro.inGame = true;
-    client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
-    // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO
+
+    clearInterval(intervalPresence);
+    clearInterval(intervalList);
+    intervalPresence = null;
+    intervalList = null
+
+    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
+    // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`gameAccepted`)
     })
@@ -356,6 +370,8 @@ router.post('/bye', (req, res) => {
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     client_TCP.write('BYE')
     client_TCP.destroy()
+    intervalPresence = setInterval(doPresence, 5000);
+    intervalList = setInterval(doList, 5000);
     res.send('ok');
 })
 

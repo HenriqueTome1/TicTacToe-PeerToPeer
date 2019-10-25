@@ -61,7 +61,16 @@
     <start-game-dialog
       v-if="showStartGameDialog"
       :player="opponetNameDialog"
+      :message="'com você!'"
       @accept="acceptMatch"
+      @reject="rejectMatch"
+    ></start-game-dialog>
+
+    <start-game-dialog
+      v-if="showPlayAgainDialog"
+      :player="opponetNameDialog"
+      :message="'novemente!'"
+      @accept="acceptePlayAgain"
       @reject="rejectMatch"
     ></start-game-dialog>
   </div>
@@ -69,10 +78,10 @@
 
 <script>
 /* eslint-disable */
-import PlayersBar from "../../components/PlayersBar";
-import GameDashBoard from "../../components/GameDashBoard";
-import GameBoard from "../../components/GameBoard";
-import StartGameDialog from "../../components/StartGameDialog";
+import PlayersBar from "components/PlayersBar";
+import GameDashBoard from "components/GameDashBoard";
+import GameBoard from "components/GameBoard";
+import StartGameDialog from "components/StartGameDialog";
 import axios from "axios";
 
 export default {
@@ -164,6 +173,7 @@ export default {
       commands: [],
       getPlayersVar: null,
       showStartGameDialog: false,
+      showPlayAgainDialog: false,
       opponetNameDialog: null
     };
   },
@@ -221,6 +231,8 @@ export default {
       this.makeGame = !this.makeGame;
     },
     myTurn(position){
+      this.addCommand('PLAY')
+
       let pos = null;
       if(position.position.line === 0 && position.position.column === 0){
         pos = 0;
@@ -241,10 +253,9 @@ export default {
       } else if (position.position.line === 2 && position.position.column === 2){
         pos = 8;
       }
-      console.log(pos, position)
+
       this.positions.forEach(position => {
         if(position.id === pos){
-          console.log('tests')
           position.text = this.ticTacToeMarkers[1];
           position.color = "red";
         }
@@ -252,32 +263,55 @@ export default {
       this.myTurn = true
     },
     youWin(){
-      // TODO: YOU WIN THE GAME JUST SHOW AN ALERTO TO INDICATE IT 
+      this.myPoints++;
+      this.giveUpBool = false
+      if(this.myPoints === 3){
+        // SHOW A MESSAGE TO USER AND BACK TO INITIAL SCREEN
+          setTimeout(() => {
+            this.rejectMatch()
+          }, 3000)
+      }
+      // TODO: YOU WIN THE GAME JUST SHOW AN ALER TO INDICATE IT 
     },
     opponentWin(){
+      this.opponentPoints++;
+      this.giveUpBool = false
+      if(this.opponentPoints === 3){
+        // SHOW A MESSAGE TO USER AND BACK TO INITIAL SCREEN
+        setTimeout(() => {
+            this.endGame()
+          }, 3000)
+      }
       // TODO: ALERT THAT OPPONENT WIN AND ENABLE PLAY AGAIN BUTTON
     },
     gameTie(){
+      this.giveUpBool = false // ENABLE PLAY AGAIN BUTTON  
       // TODO: ALERT THAT GAME END IN A TIE AND ENABLE PLAY AGAIN BUTTON
     },
     matchEnd(){
-      // TODO: A BYE WAS EMMITED BY OPPONENT, RESET THE MAP AND BACK TO PLAYERS SCREEN
+      this.endGame()
     },
     playAgain(){
       // TODO: OPPONENT WANT TO PLAY AGAIN AND HE WILL START
+      this.showPlayAgainDialog = true;
       this.myTurn = false;
     },
     letsPlay(){
       // TODO: OPPONENT ACCEPT ANOTHER MATCH, CLEAN THE MAP AND START AGAIN
+      this.cleanMap()
       this.myTurn = true;
     }
 
   },
   methods: {
-    playAgain() {
+    cleanMap(){
       this.positions.forEach(position => {
         position.text = "";
       });
+    },
+    playAgain() {
+      this.cleanMap()
+
       this.giveUpBool = true;
       this.play = false;
       axios.post("http://localhost:3000/api/client/playAgain")
@@ -285,9 +319,7 @@ export default {
       .catch(err => {})
     },
     giveUp() {
-      this.positions.forEach(position => {
-        position.text = "";
-      });
+      this.cleanMap()
       this.giveUpBool = true;
       this.play = false;
 
@@ -334,6 +366,7 @@ export default {
             })
             .then(res => {})
             .catch(res => {})
+          this.addCommand('PLAY')
           // SEND POSITION
           // ON POSITION CONFIRMED DO:
           position.text = this.ticTacToeMarkers[0];
@@ -378,7 +411,26 @@ export default {
       //send to backend start
     },
     rejectMatch() {
-      //send to backend the rejection
+      axios.post("http://localhost:3000/api/client/bye")
+      .then(res => {})
+      .catch(err => {})
+      this.endGame()
+    },
+    endGame(){
+      this.cleanMap()
+      this.dialog = false
+      this.play = false
+      this.adversary = null
+      this.makeGame = false
+      this.chatMessage = ""
+      this.giveUpBool = true
+      this.myPoints = 0
+      this.opponentPoints = 0
+      this.commands = []
+      this.getPlayersVar = null
+      this.showStartGameDialog = false
+      this.showPlayAgainDialog = false
+      this.opponetNameDialog = null
     },
     addCommand(cmd) {
       // console.log(cmd)
@@ -391,11 +443,20 @@ export default {
       } else {
         this.commands = [];
       }
+    },
+    acceptePlayAgain(){
+      this.cleanMap()
+      axios.get("http://localhost:3000/api/client/playAgain")
+      .then(res => {})
+      .catch(err => {})
     }
   },
   beforeDestroy() {
     clearInterval(this.getPlayersVar);
     this.getPlayersVar = null;
+    if(this.makeGame){
+      this.rejectMatch()
+    }
   }
 };
 </script>

@@ -72,21 +72,6 @@ function dropUser(rinfo) {
     }
 }
 
-function userInGame(rinfo){
-    let user_found = active_users.find(function (user) {
-        return user.ip == rinfo.address ? user : false;
-    });
-    if (user_found) {
-        console.log(`Usuário ${user_found.name} entrou em um jogo\n`);
-        active_users.forEach(user => {
-            if(user.ip == user_found.ip){
-                user.inGame = true;
-            }
-        })
-        // active_users.indexOf(user_found) > -1 ? active_users.inGame = true : null
-    }
-}
-
 /* Serviço de recepção e identificação da mensagem */
 server.on('message', (msg, rinfo) => {
     console.log(`Servidor recebeu a mensagem: <${msg}> -> ${rinfo.address}:${rinfo.port}\n`);
@@ -95,7 +80,6 @@ server.on('message', (msg, rinfo) => {
         case "USER": validateUser(msg, rinfo); break;
         case "LIST": listUsers(rinfo); break;
         case "EXIT": dropUser(rinfo); break;
-        case "INGAME": userInGame(rinfo); break;
         default: server.send(['USER NOK'], rinfo.port, rinfo.address, (err) => { }); //default ??? perguntar pro luiz
     }
 });
