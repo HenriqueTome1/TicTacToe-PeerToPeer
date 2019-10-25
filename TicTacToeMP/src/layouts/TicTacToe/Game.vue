@@ -222,7 +222,6 @@ export default {
     },
     myTurn(position){
       let pos = null;
-      console.log('position front ',position)
       if(position.line === 0 && position.column === 0){
         pos = 0;
       } else if (position.line === 0 && position.column === 1){
@@ -242,9 +241,13 @@ export default {
       } else if (position.line === 2 && position.column === 2){
         pos = 8;
       }
-
-      this.positions[pos].text = this.ticTacToeMarkers[1];
-      this.positions[pos].color = "red";
+      
+      this.positions.forEach(position => {
+        if(position.id === pos){
+          position.text = this.ticTacToeMarkers[1];
+          position.color = "red";
+        }
+      })
       this.myTurn = true
     },
     youWin(){
