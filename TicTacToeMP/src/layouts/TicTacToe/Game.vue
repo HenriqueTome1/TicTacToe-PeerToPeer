@@ -183,16 +183,12 @@ export default {
     },
     registrationSuccessful() {
       console.log("Usuario ta suave");
-      // this.getUserList();
     },
     registrationFailed() {
       console.log("event fired by a failed user registration");
       setInterval(() => {
         this.disconnect();
       }, 3000);
-      // this.username = prompt(
-      //   "Nome de usuário inválido. Entre com o seu nome de usuário."
-      // );
     },
     playersList(lista) {
       this.users = [];
@@ -213,9 +209,6 @@ export default {
       } else {
         this.commands = [];
       }
-      // console.log("userlist received!");
-      // console.log(msg);
-      // this.setPlayerList(msg.msg);
     },
     startMatch(user) {
       if (!this.makeGame) {
@@ -224,10 +217,8 @@ export default {
         this.adversary = user.opponent;
         this.opponetNameDialog = user.user;
       }
-      // console.log(`Usuario ${user.user} deseja jogar com voce. Voce aceita?`);
     },
     gameAccepted() {
-      // console.log('sdjdfkjdshfksjhfksdjfh')
       this.makeGame = !this.makeGame;
     },
     myTurn(position) {
@@ -238,27 +229,43 @@ export default {
       this.myPoints++;
       this.giveUpBool = false;
 
-      if(this.myPoints < 3){
-        this.showNotify('green', 'thumb_up', 'Parabéns voce ganhou esta rodada')
+      if (this.myPoints < 3) {
+        this.showNotify(
+          "green",
+          "thumb_up",
+          "Parabéns voce ganhou esta rodada"
+        );
       }
 
       if (this.myPoints === 3) {
-        this.showNotify('green', 'thumb_up', 'Parabéns voce ganhou 3 rodadas, o jogo será encerrado')
+        this.showNotify(
+          "green",
+          "thumb_up",
+          "Parabéns voce ganhou 3 rodadas, o jogo será encerrado"
+        );
         setTimeout(() => {
           this.rejectMatch();
         }, 3000);
       }
     },
     opponentWin(position) {
-      this.registerPlay(position)
+      this.registerPlay(position);
       this.opponentPoints++;
       this.giveUpBool = false;
 
       if (this.opponentPoints < 3) {
-        this.showNotify('red', 'thumb_down', 'Que azar voce perdeu esta rodada')
+        this.showNotify(
+          "red",
+          "thumb_down",
+          "Que azar voce perdeu esta rodada"
+        );
       }
       if (this.opponentPoints === 3) {
-        this.showNotify('red', 'thumb_down', 'Que azar voce perdeu 3 rodadas, o jogo será encerrado')
+        this.showNotify(
+          "red",
+          "thumb_down",
+          "Que azar voce perdeu 3 rodadas, o jogo será encerrado"
+        );
         setTimeout(() => {
           this.endGame();
         }, 3000);
@@ -266,7 +273,11 @@ export default {
     },
     gameTie() {
       this.giveUpBool = false; // ENABLE PLAY AGAIN BUTTON
-      this.showNotify('yellow', 'error_outline', 'Um empate aconteceu nesta rodada')
+      this.showNotify(
+        "yellow",
+        "error_outline",
+        "Um empate aconteceu nesta rodada"
+      );
     },
     matchEnd() {
       this.addCommand("BYE");
@@ -283,9 +294,9 @@ export default {
     }
   },
   methods: {
-    showNotify(color, icon, message){
-      let textColor = 'black'
-      let position = 'top'
+    showNotify(color, icon, message) {
+      let textColor = "black";
+      let position = "top";
 
       this.$q.notify({
         color,
@@ -294,10 +305,9 @@ export default {
         message,
         position,
         timeout: 3000
-      })
+      });
     },
     registerPlay(position) {
-      console.log(position)
       this.addCommand("PLAY");
 
       let pos = null;
@@ -363,8 +373,8 @@ export default {
       this.giveUpBool = true;
       this.play = false;
       axios
-        .post("http://localhost:3000/api/client/playAgain")
-        .then(res => {})
+        .post("http://localhost:1024/api/client/playAgain")
+        .then(res => {this.myTurn = false})
         .catch(err => {});
       this.addCommand("PLAYAGAIN");
     },
@@ -378,13 +388,13 @@ export default {
       this.opponentPoints = 0;
 
       axios
-        .post("http://localhost:3000/api/client/bye")
+        .post("http://localhost:1024/api/client/bye")
         .then(res => {})
         .catch(err => {});
     },
     startGame() {
       axios
-        .post("http://localhost:3000/api/client/startGame", this.adversary)
+        .post("http://localhost:1024/api/client/startGame", this.adversary)
         .then(response => {});
       this.users.forEach(cont => {
         cont.selected = false;
@@ -406,14 +416,12 @@ export default {
         this.adversary = contact;
       }
     },
-    // getText() {
-    //   return this.ticTacToeMarkers[0];
-    // },
+
     changeSimbol(position) {
       if (this.myTurn) {
         if (position.text === "") {
           axios
-            .post("http://localhost:3000/api/client/play", {
+            .post("http://localhost:1024/api/client/play", {
               position: position
             })
             .then(res => {})
@@ -424,12 +432,11 @@ export default {
           position.text = this.ticTacToeMarkers[0];
           position.color = "black";
           this.myTurn = false;
-          // this.chooseRandom();
         } else if (
           position.text === this.ticTacToeMarkers[1] ||
           position.text === this.ticTacToeMarkers[0]
         ) {
-          this.showNotify('yellow', 'error_outline', 'Posição já selecionada')
+          this.showNotify("yellow", "error_outline", "Posição já selecionada");
         }
       } else {
         this.dialog = true;
@@ -439,7 +446,7 @@ export default {
     },
     disconnect() {
       axios
-        .delete("http://localhost:3000/api/client")
+        .delete("http://localhost:1024/api/client")
         .then(res => {
           this.$router.push((name = "/"));
         })
@@ -451,10 +458,9 @@ export default {
       this.makeGame = !this.makeGame;
       this.showStartGameDialog = false;
 
-      // console.log(this.adversary);
       this.myTurn = false;
       axios
-        .post("http://localhost:3000/api/client/gameAccepted", {
+        .post("http://localhost:1024/api/client/gameAccepted", {
           opponent: this.adversary
         })
         .then(res => {})
@@ -464,7 +470,7 @@ export default {
     },
     rejectMatch() {
       axios
-        .post("http://localhost:3000/api/client/bye")
+        .post("http://localhost:1024/api/client/bye")
         .then(res => {})
         .catch(err => {});
       this.addCommand("BYE");
@@ -484,10 +490,8 @@ export default {
       this.getPlayersVar = null;
       this.showStartGameDialog = false;
       this.showPlayAgainDialog = false;
-      // this.opponetNameDialog = null
     },
     addCommand(cmd) {
-      // console.log(cmd)
       if (this.makeGame) {
         let msg = {
           id: this.commands.length,
@@ -500,10 +504,10 @@ export default {
     },
     acceptedPlayAgain() {
       this.showPlayAgainDialog = false;
-      this.giveUpBool = true
+      this.giveUpBool = true;
       this.cleanMap();
       axios
-        .get("http://localhost:3000/api/client/playAgain")
+        .get("http://localhost:1024/api/client/playAgain")
         .then(res => {})
         .catch(err => {});
     }

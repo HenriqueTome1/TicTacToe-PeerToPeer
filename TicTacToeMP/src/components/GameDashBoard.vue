@@ -105,7 +105,7 @@ export default {
         };
 
         axios
-          .post("http://localhost:3000/api/client/sendMessage", {
+          .post("http://localhost:1024/api/client/sendMessage", {
             message: this.chatMessage
           })
           .then(res => {
