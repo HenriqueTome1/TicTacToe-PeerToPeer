@@ -70,7 +70,7 @@
       v-if="showPlayAgainDialog"
       :player="opponetNameDialog"
       :message="'novemente!'"
-      @accept="acceptePlayAgain"
+      @accept="acceptedPlayAgain"
       @reject="rejectMatch"
     ></start-game-dialog>
   </div>
@@ -289,9 +289,11 @@ export default {
       // TODO: ALERT THAT GAME END IN A TIE AND ENABLE PLAY AGAIN BUTTON
     },
     matchEnd(){
+      this.addCommand('BYE')
       this.endGame()
     },
     playAgain(){
+      this.addCommand('PLAYAGAIN')
       // TODO: OPPONENT WANT TO PLAY AGAIN AND HE WILL START
       this.showPlayAgainDialog = true;
       this.myTurn = false;
@@ -300,7 +302,8 @@ export default {
       // TODO: OPPONENT ACCEPT ANOTHER MATCH, CLEAN THE MAP AND START AGAIN
       this.cleanMap()
       this.myTurn = true;
-    }
+    },
+
 
   },
   methods: {
@@ -317,6 +320,7 @@ export default {
       axios.post("http://localhost:3000/api/client/playAgain")
       .then(res => {})
       .catch(err => {})
+      this.addCommand('PLAYAGAIN')
     },
     giveUp() {
       this.cleanMap()
@@ -408,12 +412,14 @@ export default {
         })
         .then(res => {})
         .catch(e => {});
+        this.addCommand('PLAY')
       //send to backend start
     },
     rejectMatch() {
       axios.post("http://localhost:3000/api/client/bye")
       .then(res => {})
       .catch(err => {})
+      this.addCommand('BYE')
       this.endGame()
     },
     endGame(){
@@ -444,7 +450,7 @@ export default {
         this.commands = [];
       }
     },
-    acceptePlayAgain(){
+    acceptedPlayAgain(){
       this.cleanMap()
       axios.get("http://localhost:3000/api/client/playAgain")
       .then(res => {})
