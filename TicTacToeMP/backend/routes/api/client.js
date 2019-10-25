@@ -313,7 +313,6 @@ let client_TCP = null
 // ROTA PARA INICIAR O JOGO
 // AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
 router.post('/startGame', (req, res) => {
-    console.log('porra de client merda do caralho')
 
     client_TCP = new net.Socket();
     opponent = req.body;
@@ -330,13 +329,11 @@ router.post('/startGame', (req, res) => {
     clearInterval(intervalList);
     intervalPresence = null;
     intervalList = null
-    console.log('porra de client merda do caralho')
 
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
-    console.log('porra de client merda do caralho')
 
 })
 

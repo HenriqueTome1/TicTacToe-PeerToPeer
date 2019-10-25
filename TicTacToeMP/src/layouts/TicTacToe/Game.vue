@@ -250,7 +250,7 @@ export default {
       }
     },
     opponentWin(position) {
-      registerPlay(position)
+      this.registerPlay(position)
       this.opponentPoints++;
       this.giveUpBool = false;
 
@@ -296,7 +296,8 @@ export default {
         timeout: 3000
       })
     },
-    registerPlay() {
+    registerPlay(position) {
+      console.log(position)
       this.addCommand("PLAY");
 
       let pos = null;
@@ -499,6 +500,7 @@ export default {
     },
     acceptedPlayAgain() {
       this.showPlayAgainDialog = false;
+      this.giveUpBool = true
       this.cleanMap();
       axios
         .get("http://localhost:3000/api/client/playAgain")
