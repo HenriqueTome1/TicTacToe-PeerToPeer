@@ -84,10 +84,12 @@ function gameAccepted(msg) {
 }
 
 function doMove(msg) {
+    console.log(msg)
     let position = {
         line: parseInt(msg.toString().split(" ")[1]),
         column: parseInt(msg.toString().split(" ")[2])
     }
+    console.log('position', position)
 
     // MARCO NO CAMPO E ENVIO AO FRONT A INDICAÇÃO DE QUE É O TURNO DO USUARIO
     // E A POSIÇÃO EM QUE O SEU ADVERSÁRIO JOGOU
