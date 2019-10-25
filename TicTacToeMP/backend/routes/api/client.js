@@ -85,8 +85,8 @@ function gameAccepted(msg) {
 
 function doMove(msg) {
     let position = {
-        line: msg.toString().split(" ")[1],
-        column: msg.toString().split(" ")[2]
+        line: parseInt(msg.toString().split(" ")[1]),
+        column: parseInt(msg.toString().split(" ")[2])
     }
 
     // MARCO NO CAMPO E ENVIO AO FRONT A INDICAÇÃO DE QUE É O TURNO DO USUARIO
