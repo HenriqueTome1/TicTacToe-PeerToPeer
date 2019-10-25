@@ -84,12 +84,10 @@ function gameAccepted(msg) {
 }
 
 function doMove(msg) {
-    console.log(msg)
     let position = {
         line: parseInt(msg.toString().split(" ")[1]),
         column: parseInt(msg.toString().split(" ")[2])
     }
-    console.log('position', position)
 
     // MARCO NO CAMPO E ENVIO AO FRONT A INDICAÇÃO DE QUE É O TURNO DO USUARIO
     // E A POSIÇÃO EM QUE O SEU ADVERSÁRIO JOGOU
@@ -106,8 +104,12 @@ function endMatch(msg) {
 }
 
 function opponentWinGame(msg) {
+    let position = {
+        line: parseInt(msg.toString().split(" ")[1]),
+        column: parseInt(msg.toString().split(" ")[2])
+    }
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-    io.emit("opponentWin")
+    io.emit("opponentWin", { position })
 }
 
 function gameTie(msg) {
@@ -139,7 +141,7 @@ function verifyTie() {
     }
 }
 
-function checkIfWin(value) {
+function checkIfWin(value, position) {
     if ((campo[0][0] === value && campo[0][1] === value && campo[0][2] === value) ||
         (campo[1][0] === value && campo[1][1] === value && campo[1][2] === value) ||
         (campo[2][0] === value && campo[2][1] === value && campo[2][2] === value) ||
@@ -151,7 +153,7 @@ function checkIfWin(value) {
 
         campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         io.emit("youWin");
-        client_TCP.write('OPWIN')
+        client_TCP.write(`OPWIN ${position.line} ${position.column}`)
         return true
     } else if (verifyTie()) {
         io.emit("gameTie")
@@ -165,7 +167,7 @@ function checkIfWin(value) {
 function checkForEmptyPos(position) {
     if (campo[position.line][position.column] === 0) {
         campo[position.line][position.column] = 1;
-        if (!checkIfWin(1)) {
+        if (!checkIfWin(1, position)) {
             client_TCP.write(`PLAY ${position.line} ${position.column}`)
         }
     } else {
@@ -311,6 +313,8 @@ let client_TCP = null
 // ROTA PARA INICIAR O JOGO
 // AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
 router.post('/startGame', (req, res) => {
+    console.log('porra de client merda do caralho')
+
     client_TCP = new net.Socket();
     opponent = req.body;
     // client_TCP = net.createConnection({ req.body.port, }, () => {
@@ -326,11 +330,14 @@ router.post('/startGame', (req, res) => {
     clearInterval(intervalList);
     intervalPresence = null;
     intervalList = null
+    console.log('porra de client merda do caralho')
 
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
+    console.log('porra de client merda do caralho')
+
 })
 
 router.post('/sendMessage', (req, res) => {
