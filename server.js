@@ -110,4 +110,4 @@ server.on('listening', () => {
     console.log(`Servidor ouvindo em: \n${address.address}:${address.port}`);
 });
 
-server.bind(8000, '10.81.112.133');
+server.bind(8000, '192.168.100.107');

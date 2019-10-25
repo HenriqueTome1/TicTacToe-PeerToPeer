@@ -56,6 +56,10 @@ const server_TCP = net.createServer(function (socket) {
             case "PLAY": doMove(msg); break;
             case "MSG": sendMessage(msg); break;
             case "gameAccepted": gameAccepted(msg); break;
+            case "OPWIN": opponentWinGame(msg); break;
+            case "GAMETIE": gameTie(msg); break;
+            case "PLAYAGAIN": playAgain(msg); break;
+            case "PLAYAGAINACCEPTED": playAgainAccepted(msg); break;
         }
         // console.log(`${data.toString()}`)
     })
@@ -77,6 +81,85 @@ function sendMessage(msg) {
 
 function gameAccepted(msg) {
     io.emit("gameAccepted")
+}
+
+function doMove(msg) {
+    let position = {
+        line: msg.toString().split(" ")[1],
+        column: msg.toString().split(" ")[2]
+    }
+
+    // MARCO NO CAMPO E ENVIO AO FRONT A INDICAÇÃO DE QUE É O TURNO DO USUARIO
+    // E A POSIÇÃO EM QUE O SEU ADVERSÁRIO JOGOU
+    campo[position.line][position.column] = 2;
+    io.emit('myTurn', position)
+}
+
+function endMatch(msg){
+    client_TCP.destroy()
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    io.emit("matchEnd")
+}
+
+function opponentWinGame(msg){
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    io.emit("opponentWin")
+}
+
+function gameTie(msg){
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    io.emit("gameTie")
+}
+
+function playAgain(msg){
+    io.emit('playAgain')
+}
+
+function playAgainAccepted(msg){
+    io.emit('letsPlay')
+}
+
+function verifyTie(){
+    campo.forEach(pos => {
+        if(pos === 0){
+            return false
+        }
+    })
+    return true
+}
+
+function checkIfWin(value){
+    if( (campo[0][0] === value && campo[0][1] === value && campo[0][2] === value) ||
+        (campo[1][0] === value && campo[1][1] === value && campo[1][2] === value) ||
+        (campo[2][0] === value && campo[2][1] === value && campo[2][2] === value) ||
+        (campo[0][0] === value && campo[1][0] === value && campo[2][0] === value) ||
+        (campo[0][1] === value && campo[1][1] === value && campo[2][1] === value) ||
+        (campo[0][2] === value && campo[1][2] === value && campo[2][2] === value) ||
+        (campo[0][0] === value && campo[1][1] === value && campo[2][2] === value) ||
+        (campo[0][2] === value && campo[1][1] === value && campo[2][0] === value)){
+        
+        campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+        io.emit("youWin");
+        client_TCP.write('OPWIN')
+        return true
+    } else if (verifyTie()) {
+        io.emit("gameTie")
+        client_TCP.write('GAMETIE')
+        return true
+    }
+    return false
+
+}
+
+function checkForEmptyPos(position){
+    if(campo[position.line][position.column] === 0){
+        campo[position.line][position.column] = 1;
+        if(!checkIfWin(1)){
+            client_TCP.write(`PLAY ${position.line} ${position.column}`)
+        }
+    } else {
+        io.emit("positionInvalid")
+    }
 }
 
 // LISTENER DO SERVER UDP
@@ -241,7 +324,6 @@ router.post('/sendMessage', (req, res) => {
 
 router.post('/gameAccepted', (req, res) => {
     client_TCP = new net.Socket();
-    console.log(req.body, cadastro)
     opponent = req.body.opponent;
     cadastro.inGame = true;
     client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
@@ -253,9 +335,30 @@ router.post('/gameAccepted', (req, res) => {
 })
 
 router.post('/play', (req, res) => {
-    console.log(req.body.position)
+    let position = {
+        line: req.body.position.line,
+        column: req.body.position.column
+    }
+    checkForEmptyPos(position)
     res.send('ok')
-    // client_TCP.write('PLAY', req.body.position)
+})
+
+router.post('/bye', (req, res) => {
+    // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    client_TCP.write('BYE')
+    client_TCP.destroy()
+    res.send('ok');
+})
+
+router.post('/playAgain', (req, res) => {
+    client_TCP.write('PLAYAGAIN')
+    res.send('ok');
+})
+
+router.get('/playAgain', (req, res) => {
+    client_TCP.write('PLAYAGAINACCEPTED')
+    res.send('ok');
 })
 
 // Toda vez que criar iniciar um jogo esse cliente é criado

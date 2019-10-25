@@ -112,42 +112,42 @@ export default {
           id: 3,
           text: "",
           color: "black",
-          line: 0,
-          column: 2
+          line: 1,
+          column: 0
         },
         {
           id: 4,
           text: "",
           color: "black",
-          line: 0,
-          column: 2
+          line: 1,
+          column: 1
         },
         {
           id: 5,
           text: "",
           color: "black",
-          line: 0,
+          line: 1,
           column: 2
         },
         {
           id: 6,
           text: "",
           color: "black",
-          line: 0,
-          column: 2
+          line: 2,
+          column: 0
         },
         {
           id: 7,
           text: "",
           color: "black",
-          line: 0,
-          column: 2
+          line: 2,
+          column: 1
         },
         {
           id: 8,
           text: "",
           color: "black",
-          line: 0,
+          line: 2,
           column: 2
         }
       ],
@@ -156,7 +156,7 @@ export default {
       dialog: false,
       play: false,
       adversary: null,
-      makeGame: true,
+      makeGame: false,
       chatMessage: "",
       giveUpBool: true,
       myPoints: 0,
@@ -166,9 +166,6 @@ export default {
       showStartGameDialog: false,
       opponetNameDialog: null
     };
-  },
-  mounted() {
-    this.getPlayers();
   },
   sockets: {
     connect() {
@@ -222,7 +219,54 @@ export default {
     gameAccepted() {
       // console.log('sdjdfkjdshfksjhfksdjfh')
       this.makeGame = !this.makeGame;
+    },
+    myTurn(position){
+      let pos = null;
+      if(position.line === 0 && position.column === 0){
+        pos = 0;
+      } else if (position.line === 0 && position.column === 1){
+        pos = 1;
+      } else if (position.line === 0 && position.column === 2){
+        pos = 2;
+      } else if (position.line === 1 && position.column === 0){
+        pos = 3;
+      } else if (position.line === 1 && position.column === 1){
+        pos = 4;
+      } else if (position.line === 1 && position.column === 2){
+        pos = 5;
+      } else if (position.line === 2 && position.column === 0){
+        pos = 6;
+      } else if (position.line === 2 && position.column === 1){
+        pos = 7;
+      } else if (position.line === 2 && position.column === 2){
+        pos = 8;
+      }
+
+      this.positions[pos].text = this.ticTacToeMarkers[1];
+      this.positions[pos].color = "red";
+      this.myTurn = true
+    },
+    youWin(){
+      // TODO: YOU WIN THE GAME JUST SHOW AN ALERTO TO INDICATE IT 
+    },
+    opponentWin(){
+      // TODO: ALERT THAT OPPONENT WIN AND ENABLE PLAY AGAIN BUTTON
+    },
+    gameTie(){
+      // TODO: ALERT THAT GAME END IN A TIE AND ENABLE PLAY AGAIN BUTTON
+    },
+    matchEnd(){
+      // TODO: A BYE WAS EMMITED BY OPPONENT, RESET THE MAP AND BACK TO PLAYERS SCREEN
+    },
+    playAgain(){
+      // TODO: OPPONENT WANT TO PLAY AGAIN AND HE WILL START
+      this.myTurn = false;
+    },
+    letsPlay(){
+      // TODO: OPPONENT ACCEPT ANOTHER MATCH, CLEAN THE MAP AND START AGAIN
+      this.myTurn = true;
     }
+
   },
   methods: {
     playAgain() {
@@ -231,12 +275,24 @@ export default {
       });
       this.giveUpBool = true;
       this.play = false;
+      axios.post("http://localhost:3000/api/client/playAgain")
+      .then(res => {})
+      .catch(err => {})
     },
     giveUp() {
-      this.playAgain();
+      this.positions.forEach(position => {
+        position.text = "";
+      });
+      this.giveUpBool = true;
+      this.play = false;
+
       this.makeGame = false;
       this.myPoints = 0;
       this.opponentPoints = 0;
+
+      axios.post("http://localhost:3000/api/client/bye")
+      .then(res => {})
+      .catch(err => {})
     },
     startGame() {
       axios
@@ -268,7 +324,7 @@ export default {
     changeSimbol(position) {
       if (this.myTurn) {
         if (position.text === "") {
-          axios.post("http://localhost:3000/api/client/gameAccepted", {
+          axios.post("http://localhost:3000/api/client/play", {
               position: position
             })
             .then(res => {})
@@ -278,70 +334,19 @@ export default {
           position.text = this.ticTacToeMarkers[0];
           position.color = "black";
           this.myTurn = false;
-          this.chooseRandom();
+          // this.chooseRandom();
         } else if (
           position.text === this.ticTacToeMarkers[1] ||
           position.text === this.ticTacToeMarkers[0]
         ) {
+          // TODO: PUT AN ALERT HERE
           console.log('cant check this position!')
-          // SEND TO BACK END THIS POSITION
         }
       } else {
         this.dialog = true;
+        // TODO: AN ALERT HERE TO INDICATES THAT IS ANOTHER PLAYER TURN
         console.log("Another player turn");
       }
-    },
-    chooseRandom() {
-      let mark = false;
-      this.positions.forEach(position => {
-        if (position.text === "") {
-          mark = true;
-        }
-      });
-      if (!mark) {
-        let rnd = Math.floor(Math.random() * 2);
-        if (rnd == 0) {
-          this.myPoints++;
-        } else {
-          this.opponentPoints++;
-        }
-        this.myTurn = true;
-        this.giveUpBool = false;
-        if (this.myPoints == 3) {
-          console.log("ganhei");
-          this.playAgain();
-          this.makeGame = false;
-          this.myPoints = 0;
-          this.opponentPoints = 0;
-        } else if (this.opponentPoints == 3) {
-          console.log("perdi");
-          this.playAgain();
-          this.makeGame = false;
-          this.myPoints = 0;
-          this.opponentPoints = 0;
-        }
-      }
-
-      setTimeout(() => {
-        while (mark) {
-          let rnd = Math.floor(Math.random() * this.positions.length);
-
-          if (this.positions[rnd].text === "") {
-            this.positions[rnd].text = this.ticTacToeMarkers[1];
-            this.positions[rnd].color = "red";
-            mark = false;
-            this.myTurn = true;
-          }
-        }
-      }, 0);
-    },
-    getPlayers() {
-      // this.getPlayersVar = setInterval(() => {
-      //   axios.get("http://localhost:3000/api/client").then(response => {
-      //     console.log(response);
-      //     this.users = response.data.users;
-      //   });
-      // }, 5000);
     },
     disconnect() {
       axios
@@ -357,7 +362,8 @@ export default {
       this.makeGame = !this.makeGame;
       this.showStartGameDialog = false;
 
-      console.log(this.adversary);
+      // console.log(this.adversary);
+      this.myTurn = false;
       axios
         .post("http://localhost:3000/api/client/gameAccepted", {
           opponent: this.adversary
