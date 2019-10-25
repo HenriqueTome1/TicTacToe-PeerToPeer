@@ -222,6 +222,7 @@ export default {
     },
     myTurn(position){
       let pos = null;
+      console.log('position front ',position)
       if(position.line === 0 && position.column === 0){
         pos = 0;
       } else if (position.line === 0 && position.column === 1){
