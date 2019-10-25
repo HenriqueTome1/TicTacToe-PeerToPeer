@@ -222,28 +222,29 @@ export default {
     },
     myTurn(position){
       let pos = null;
-      if(position.line === 0 && position.column === 0){
+      if(position.position.line === 0 && position.position.column === 0){
         pos = 0;
-      } else if (position.line === 0 && position.column === 1){
+      } else if (position.position.line === 0 && position.position.column === 1){
         pos = 1;
-      } else if (position.line === 0 && position.column === 2){
+      } else if (position.position.line === 0 && position.position.column === 2){
         pos = 2;
-      } else if (position.line === 1 && position.column === 0){
+      } else if (position.position.line === 1 && position.position.column === 0){
         pos = 3;
-      } else if (position.line === 1 && position.column === 1){
+      } else if (position.position.line === 1 && position.position.column === 1){
         pos = 4;
-      } else if (position.line === 1 && position.column === 2){
+      } else if (position.position.line === 1 && position.position.column === 2){
         pos = 5;
-      } else if (position.line === 2 && position.column === 0){
+      } else if (position.position.line === 2 && position.position.column === 0){
         pos = 6;
-      } else if (position.line === 2 && position.column === 1){
+      } else if (position.position.line === 2 && position.position.column === 1){
         pos = 7;
-      } else if (position.line === 2 && position.column === 2){
+      } else if (position.position.line === 2 && position.position.column === 2){
         pos = 8;
       }
-      
+      console.log(pos, position)
       this.positions.forEach(position => {
         if(position.id === pos){
+          console.log('tests')
           position.text = this.ticTacToeMarkers[1];
           position.color = "red";
         }
