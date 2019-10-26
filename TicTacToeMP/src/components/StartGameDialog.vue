@@ -3,23 +3,28 @@
     <q-dialog v-model="seamless" seamless position="bottom">
       <q-card style="width: 350px">
         <q-card-section class="row items-center no-wrap">
-          <div>
-            <div class="text-weight-bold">O jogador {{ player }} que jogar {{ message }}</div>
-            <div class="text-grey">Deseja aceitar?</div>
+          <div v-if="awaitingPlayerResponse">
+            <div>
+              <div class="text-weight-bold">Aguardando a resposta do jogador {{ player }}!</div>
+            </div>
           </div>
+            <div v-if="!awaitingPlayerResponse">
+              <div class="text-weight-bold">O jogador {{ player }} quer jogar {{ message }}</div>
+              <div class="text-grey">Deseja aceitar?</div>
+            </div>
 
-          <q-space />
+            <q-space v-if="!awaitingPlayerResponse" />
 
-          <q-btn flat round icon="done" @click="acceptMatch">
-            <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-              Aceitar partida
-            </q-tooltip>
-          </q-btn>
-          <q-btn flat round icon="close" v-close-popup @click="rejectMatch">
-            <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">
-              Rejeitar partida
-            </q-tooltip>
-          </q-btn>
+            <q-btn v-if="!awaitingPlayerResponse" flat round icon="done" @click="acceptMatch">
+              <q-tooltip anchor="top middle" self="bottom middle" :offset="[10, 10]">Aceitar partida</q-tooltip>
+            </q-btn>
+            <q-btn v-if="!awaitingPlayerResponse" flat round icon="close" v-close-popup @click="rejectMatch">
+              <q-tooltip
+                anchor="top middle"
+                self="bottom middle"
+                :offset="[10, 10]"
+              >Rejeitar partida</q-tooltip>
+            </q-btn>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -36,6 +41,11 @@ export default {
     },
     message: {
       type: String
+    },
+    awaitingPlayerResponse:{
+      type: Boolean,
+      default: false,
+      required: false
     }
   },
   data() {
@@ -44,11 +54,11 @@ export default {
     };
   },
   methods: {
-    acceptMatch(){
-      this.$emit("accept")
+    acceptMatch() {
+      this.$emit("accept");
     },
-    rejectMatch(){
-      this.$emit("reject")
+    rejectMatch() {
+      this.$emit("reject");
     }
   }
 };

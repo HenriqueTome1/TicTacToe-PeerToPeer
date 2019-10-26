@@ -91,6 +91,7 @@ function endMatch(msg) {
     client_TCP.destroy()
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("matchEnd")
+    console.log('match end emited')
     interval_presence = setInterval(doPresence, 5000);
     interval_list = setInterval(doList, 5000);
 }
@@ -366,10 +367,19 @@ router.post('/play', (req, res) => {
 })
 
 router.post('/bye', (req, res) => {
+
+    if (!client_TCP) {
+        client_TCP = new net.Socket();
+        client_TCP.connect(opponent.port, opponent.ip, () => {
+        })
+    }
+
     // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     client_TCP.write('BYE')
-    client_TCP.destroy()
+    setInterval(() => {
+        client_TCP.destroy()
+    }, 300)
     interval_presence = setInterval(doPresence, 5000);
     interval_list = setInterval(doList, 5000);
     res.send('ok');

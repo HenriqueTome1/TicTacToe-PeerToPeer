@@ -73,6 +73,12 @@
       @accept="acceptedPlayAgain"
       @reject="rejectMatch"
     ></start-game-dialog>
+
+     <start-game-dialog
+      v-if="awaitPlayResponse"
+      :player="this.adversary.user"
+      awaitingPlayerResponse
+    ></start-game-dialog>
   </div>
 </template>
 
@@ -174,6 +180,7 @@ export default {
       getPlayersVar: null,
       showStartGameDialog: false,
       showPlayAgainDialog: false,
+      awaitPlayResponse: false,
       opponetNameDialog: null
     };
   },
@@ -219,6 +226,7 @@ export default {
       }
     },
     gameAccepted() {
+      this.awaitPlayResponse = false
       this.makeGame = !this.makeGame;
     },
     myTurn(position) {
@@ -272,7 +280,9 @@ export default {
       }
     },
     gameTie(position) {
-      this.registerPlay(position);
+      if(position){
+        this.registerPlay(position);
+      }
       this.giveUpBool = false; // ENABLE PLAY AGAIN BUTTON
       this.showNotify(
         "yellow",
@@ -281,6 +291,12 @@ export default {
       );
     },
     matchEnd() {
+      this.awaitPlayResponse = false
+      this.showNotify(
+        "red",
+        "error_outline",
+        "Este usuário não deseja jogar com voce"
+      );
       this.addCommand("BYE");
       this.endGame();
     },
@@ -400,6 +416,7 @@ export default {
       this.users.forEach(cont => {
         cont.selected = false;
       });
+      this.awaitPlayResponse = true
     },
     SelectPlayer(contact) {
       if (contact.selected) {
