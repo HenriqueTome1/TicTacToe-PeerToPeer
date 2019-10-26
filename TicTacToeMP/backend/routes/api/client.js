@@ -272,7 +272,6 @@ function FormatlistUsers(msg) {
                 user: newPlayer[0],
                 ip: newPlayer[1],
                 port: parseInt(newPlayer[2]),
-                inGame: (newPlayer[3] === 'true'),
                 selected: false
             }
             if (obj.ip != cadastro.user_ip) {
@@ -311,27 +310,20 @@ let client_TCP = null
 // AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
 router.post('/startGame', (req, res) => {
 
-    client_TCP = new net.Socket();
     opponent = req.body;
-    // client_TCP = net.createConnection({ req.body.port, }, () => {
-
-    // })
-    // client_TCP.connect(parseInt(cadastro.user_port), cadastro.user_ip, () => {
-    //     client_TCP.write(`START ${cadastro.user_name}`)
-    // // })
-    // console.log('user_port',cadastro.user_port)
-    cadastro.inGame = true;
 
     clearInterval(interval_presence);
     clearInterval(interval_list);
     interval_presence = null;
     interval_list = null
 
+    if(!client_TCP){
+        client_TCP = new net.Socket();
+    }
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
-
 })
 
 router.post('/sendMessage', (req, res) => {
@@ -342,18 +334,19 @@ router.post('/sendMessage', (req, res) => {
 router.post('/gameAccepted', (req, res) => {
     client_TCP = new net.Socket();
     opponent = req.body.opponent;
-    cadastro.inGame = true;
 
     clearInterval(interval_presence);
     clearInterval(interval_list);
     interval_presence = null;
     interval_list = null
-
+    console.log('gameAccepted')
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`gameAccepted`)
     })
+    console.log('already writed')
+
     res.send('ok')
 })
 
@@ -367,7 +360,7 @@ router.post('/play', (req, res) => {
 })
 
 router.post('/bye', (req, res) => {
-
+    opponent = req.body.opponent;
     if (!client_TCP) {
         client_TCP = new net.Socket();
         client_TCP.connect(opponent.port, opponent.ip, () => {
@@ -377,7 +370,7 @@ router.post('/bye', (req, res) => {
     // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     client_TCP.write('BYE')
-    setInterval(() => {
+    setTimeout(() => {
         client_TCP.destroy()
     }, 300)
     interval_presence = setInterval(doPresence, 5000);

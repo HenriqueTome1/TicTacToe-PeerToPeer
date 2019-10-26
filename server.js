@@ -56,7 +56,7 @@ function validateUser(msg, rinfo) {
 function listUsers(rinfo) {
     let list = `LIST ${active_users.length}`
     active_users.map((user) => {
-        list += ` <${user.name}:${user.ip}:${user.port}:${user.inGame}> `
+        list += ` <${user.name}:${user.ip}:${user.port}> `
     })
     server.send([list], rinfo.port, rinfo.address, (err) => { });
 }

@@ -85,6 +85,9 @@ export default {
     },
     startGame() {
       this.$emit("startGame");
+    },
+    setPlayFalse(){
+      this.play = false;
     }
   }
 };

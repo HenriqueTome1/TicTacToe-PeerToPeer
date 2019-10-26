@@ -1,6 +1,7 @@
 <template>
   <div class="row">
     <players-bar
+      ref="playersBar"
       v-if="!makeGame"
       :users="users"
       :usersInGame="usersInGame"
@@ -416,6 +417,7 @@ export default {
       this.users.forEach(cont => {
         cont.selected = false;
       });
+      this.$refs.playersBar.setPlayFalse();
       this.awaitPlayResponse = true
     },
     SelectPlayer(contact) {
@@ -488,7 +490,10 @@ export default {
     },
     rejectMatch() {
       axios
-        .post("http://localhost:1024/api/client/bye")
+        .post("http://localhost:1024/api/client/bye",
+        {
+          opponent: this.adversary
+        })
         .then(res => {})
         .catch(err => {});
       this.addCommand("BYE");
