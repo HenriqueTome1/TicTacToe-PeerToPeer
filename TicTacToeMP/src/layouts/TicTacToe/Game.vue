@@ -271,7 +271,8 @@ export default {
         }, 3000);
       }
     },
-    gameTie() {
+    gameTie(position) {
+      this.registerPlay(position);
       this.giveUpBool = false; // ENABLE PLAY AGAIN BUTTON
       this.showNotify(
         "yellow",
