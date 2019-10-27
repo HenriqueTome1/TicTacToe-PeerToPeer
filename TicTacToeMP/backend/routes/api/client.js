@@ -269,6 +269,7 @@ function FormatlistUsers(msg) {
     let Ob_id = 0;
     data.forEach(player => {
         if (player[0] === '<') {
+            console.log(player, cadastro)
             player = player.replace("<", "");
             player = player.replace(">", "");
             let newPlayer = player.split(':')
