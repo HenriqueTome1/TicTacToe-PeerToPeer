@@ -213,6 +213,7 @@ router.post('/', async (req, res) => {
     // server_TCP.listen(cadastro.user_port, () => {console.log('Servidor TCP ouvindo na porta ' + cadastro.user_port)});
     // RESPONDENDO AO FRONT -> TALVEZ EU MUDE ISSO (COM O io) PRA RESPONDER SÓ QUANDO RECEBER A RESPOSTA DO SERVIDOR
     // res.send(create_user);
+    res.send('ok');
 })
 
 function TCPserverListen() {
@@ -240,6 +241,7 @@ router.delete('/', (req, res) => {
 
     // FINALIZA O SERVIDOR TCP
     server_TCP.close();
+    tcp_listening = false;
     res.send('REMOVED')
 })
 
@@ -324,6 +326,8 @@ router.post('/startGame', (req, res) => {
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
+
+    res.send('ok');
 })
 
 router.post('/sendMessage', (req, res) => {
@@ -339,13 +343,11 @@ router.post('/gameAccepted', (req, res) => {
     clearInterval(interval_list);
     interval_presence = null;
     interval_list = null
-    console.log('gameAccepted')
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
     client_TCP.connect(opponent.port, opponent.ip, () => {
         client_TCP.write(`gameAccepted`)
     })
-    console.log('already writed')
 
     res.send('ok')
 })
