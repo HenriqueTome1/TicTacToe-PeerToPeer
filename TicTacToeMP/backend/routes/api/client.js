@@ -320,7 +320,7 @@ router.post('/startGame', (req, res) => {
     clearInterval(interval_presence);
     clearInterval(interval_list);
     interval_presence = null;
-    interval_list = null
+    interval_list = null;
 
     if(!client_TCP){
         client_TCP = new net.Socket();
@@ -347,7 +347,7 @@ router.post('/gameAccepted', (req, res) => {
     clearInterval(interval_presence);
     clearInterval(interval_list);
     interval_presence = null;
-    interval_list = null
+    interval_list = null;
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
     client_TCP.connect(opponent.port, opponent.ip, () => {
@@ -380,8 +380,11 @@ router.post('/bye', (req, res) => {
         client_TCP.destroy()
         client_TCP = null;
     }, 300)
-    interval_presence = setInterval(doPresence, 5000);
-    interval_list = setInterval(doList, 5000);
+
+    if(!interval_presence && !interval_list){
+        interval_presence = setInterval(doPresence, 5000);
+        interval_list = setInterval(doList, 5000);
+    }
     res.send('ok');
 })
 
