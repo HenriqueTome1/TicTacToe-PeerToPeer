@@ -89,6 +89,8 @@ function doMove(msg) {
 
 function endMatch(msg) {
     client_TCP.destroy()
+    client_TCP = null;
+
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("matchEnd")
     console.log('match end emited')
@@ -368,12 +370,12 @@ router.post('/bye', (req, res) => {
         client_TCP.connect(opponent.port, opponent.ip, () => {
         })
     }
-
     // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     client_TCP.write('BYE')
     setTimeout(() => {
         client_TCP.destroy()
+        client_TCP = null;
     }, 300)
     interval_presence = setInterval(doPresence, 5000);
     interval_list = setInterval(doList, 5000);
