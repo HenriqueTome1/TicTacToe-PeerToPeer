@@ -69,13 +69,13 @@
 
     <start-game-dialog
       v-if="showPlayAgainDialog"
-      :player="opponetNameDialog"
+      :player="opponetNameDialog ? opponetNameDialog : adversary.user"
       :message="'novemente!'"
       @accept="acceptedPlayAgain"
       @reject="rejectMatch"
     ></start-game-dialog>
 
-     <start-game-dialog
+    <start-game-dialog
       v-if="awaitPlayResponse"
       :player="this.adversary.user"
       awaitingPlayerResponse
@@ -221,13 +221,16 @@ export default {
     startMatch(user) {
       if (!this.makeGame) {
         this.showStartGameDialog = true;
-        console.log(user);
         this.adversary = user.opponent;
         this.opponetNameDialog = user.user;
+        this.myPoints = 0;
+        this.opponentPoints = 0;
       }
     },
     gameAccepted() {
-      this.awaitPlayResponse = false
+      this.myPoints = 0;
+      this.opponentPoints = 0;
+      this.awaitPlayResponse = false;
       this.makeGame = !this.makeGame;
     },
     myTurn(position) {
@@ -281,7 +284,7 @@ export default {
       }
     },
     gameTie(position) {
-      if(position){
+      if (position) {
         this.registerPlay(position);
       }
       this.giveUpBool = false; // ENABLE PLAY AGAIN BUTTON
@@ -292,12 +295,15 @@ export default {
       );
     },
     matchEnd() {
-      this.awaitPlayResponse = false
-      this.showNotify(
-        "red",
-        "error_outline",
-        "Este usuário não deseja jogar com voce"
-      );
+      this.awaitPlayResponse = false;
+      if (this.opponentPoints < 3) {
+        this.showNotify(
+          "red",
+          "error_outline",
+          "Este usuário não deseja jogar com voce"
+        );
+      }
+      this.opponentPoints = 0;
       this.addCommand("BYE");
       this.endGame();
     },
@@ -392,7 +398,9 @@ export default {
       this.play = false;
       axios
         .post("http://localhost:1024/api/client/playAgain")
-        .then(res => {this.myTurn = false})
+        .then(res => {
+          this.myTurn = false;
+        })
         .catch(err => {});
       this.addCommand("PLAYAGAIN");
     },
@@ -418,7 +426,7 @@ export default {
         cont.selected = false;
       });
       this.$refs.playersBar.setPlayFalse();
-      this.awaitPlayResponse = true
+      this.awaitPlayResponse = true;
     },
     SelectPlayer(contact) {
       if (contact.selected) {
@@ -459,9 +467,13 @@ export default {
           this.showNotify("yellow", "error_outline", "Posição já selecionada");
         }
       } else {
-        this.dialog = true;
-        // TODO: AN ALERT HERE TO INDICATES THAT IS ANOTHER PLAYER TURN
-        console.log("Another player turn");
+        this.showNotify(
+          "yellow",
+          "error_outline",
+          `Rodada do jogador ${this.adversary.user}`
+        );
+        // this.dialog = true;
+        // console.log("Another player turn");
       }
     },
     disconnect() {
@@ -490,8 +502,7 @@ export default {
     },
     rejectMatch() {
       axios
-        .post("http://localhost:1024/api/client/bye",
-        {
+        .post("http://localhost:1024/api/client/bye", {
           opponent: this.adversary
         })
         .then(res => {})

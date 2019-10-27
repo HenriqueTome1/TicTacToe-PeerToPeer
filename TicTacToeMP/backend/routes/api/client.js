@@ -155,6 +155,7 @@ function checkIfWin(value, position) {
         client_TCP.write(`OPWIN ${position.line} ${position.column}`)
         return true
     } else if (verifyTie()) {
+        campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         io.emit("gameTie")
         client_TCP.write(`GAMETIE ${position.line} ${position.column}`)
         return true
@@ -338,7 +339,9 @@ router.post('/sendMessage', (req, res) => {
 })
 
 router.post('/gameAccepted', (req, res) => {
-    client_TCP = new net.Socket();
+    if(!client_TCP){
+        client_TCP = new net.Socket();
+    }
     opponent = req.body.opponent;
 
     clearInterval(interval_presence);
