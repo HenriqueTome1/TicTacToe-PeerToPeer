@@ -9,7 +9,7 @@ const routes = [
   },
   {
     path: '/game',
-    component: () => import('layouts/TicTacToe/Game.vue'),
+    component: () => import('layouts/TicTacToe/GameScreen.vue'),
     children: [
       // { path: '', component: () => import('pages/Index.vue') }
     ]

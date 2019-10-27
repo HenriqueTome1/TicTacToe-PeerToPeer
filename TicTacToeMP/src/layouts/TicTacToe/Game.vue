@@ -229,7 +229,7 @@ export default {
       this.makeGame = !this.makeGame;
     },
     myTurn(position) {
-      this.registerPlay(position, this.userInfo);
+      this.registerPlay(position, this.adversary);
       this.myTurn = true;
     },
     youWin() {
@@ -308,6 +308,7 @@ export default {
       this.myTurn = false;
     },
     letsPlay() {
+      this.addCommand("GAMEACCEPTED", this.adversary);
       this.cleanMap();
       this.myTurn = true;
     }

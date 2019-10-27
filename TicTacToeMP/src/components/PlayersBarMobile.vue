@@ -1,12 +1,12 @@
 <template>
   <div class="q-pa-md playersList">
-    <q-toolbar class="bg-primary text-white shadow-2">
+     <q-toolbar class="bg-primary text-white shadow-2">
       <q-toolbar-title style="text-align: center;">Players</q-toolbar-title>
     </q-toolbar>
 
-    <q-scroll-area style="height: 90vh; width: 300px;">
-      <q-list bordered style="height: 90vh">
-        <q-item-label header>Jogadores disponíveis</q-item-label>
+    <q-scroll-area style="width: 100vw;">
+      <q-list>
+        <q-item-label header style="text-align: center;">Jogadores disponíveis</q-item-label>
         <q-item
           :active="user.selected"
           v-for="user in users"
@@ -24,10 +24,6 @@
             <q-item-label>{{ user.user }}</q-item-label>
             <!-- <q-item-label caption lines="1">{{ contact.email }}</q-item-label> -->
           </q-item-section>
-
-          <!-- <q-item-section side>
-          <q-icon name="chat_bubble" color="green" />
-          </q-item-section>-->
         </q-item>
 
       </q-list>
@@ -78,8 +74,9 @@ export default {
 }
 .playBtn {
   position: absolute;
-  left: 5px;
-  bottom: 5px;
-  width: 290px;
+  left: 0px;
+  bottom: 0px;
+  height: 40px;
+  width: 100vw;
 }
 </style>

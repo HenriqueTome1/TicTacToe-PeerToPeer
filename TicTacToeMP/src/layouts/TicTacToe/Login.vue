@@ -45,7 +45,7 @@
         ]"
       />
 
-      <div>
+      <div class="row justify-end">
         <q-btn label="Cadastrar" type="submit" color="primary" />
         <q-btn label="Limpar" type="reset" color="primary" flat class="q-ml-sm" />
       </div>
@@ -117,7 +117,12 @@ export default {
         });
       // console.log(this.signUp(user_name, user_port, server_ip, server_port));
     },
-    onReset() {}
+    onReset() {
+      this.user_name = "",
+      this.user_port = "",
+      this.server_ip = "localhost",
+      this.server_port = 8000
+    }
   }
 };
 </script>
