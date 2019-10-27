@@ -4,7 +4,6 @@
       ref="playersBar"
       v-if="!makeGame"
       :users="users"
-      :usersInGame="usersInGame"
       @selectedPlayer="SelectPlayer"
       @startGame="startGame"
     ></players-bar>
@@ -14,6 +13,7 @@
         :opponent="adversary"
         :commands="commands"
         :giveUpBool="giveUpBool"
+        :userInfo="userInfo"
         @playAgain="playAgain"
         @giveUp="giveUp"
         @addCommand="addCommand"
@@ -100,8 +100,8 @@ export default {
   },
   data() {
     return {
+      userInfo: {},
       users: [],
-      usersInGame: [],
       positions: [
         {
           id: 0,
@@ -200,13 +200,8 @@ export default {
     },
     playersList(lista) {
       this.users = [];
-      this.usersInGame = [];
       lista.list.users.forEach(user => {
-        if (user.inGame) {
-          this.usersInGame.push(user);
-        } else {
-          this.users.push(user);
-        }
+        this.users.push(user);
       });
       if (this.makeGame) {
         let msg = {
@@ -234,7 +229,7 @@ export default {
       this.makeGame = !this.makeGame;
     },
     myTurn(position) {
-      this.registerPlay(position);
+      this.registerPlay(position, this.userInfo);
       this.myTurn = true;
     },
     youWin() {
@@ -261,7 +256,7 @@ export default {
       }
     },
     opponentWin(position) {
-      this.registerPlay(position);
+      this.registerPlay(position, this.adversary);
       this.opponentPoints++;
       this.giveUpBool = false;
 
@@ -285,7 +280,7 @@ export default {
     },
     gameTie(position) {
       if (position) {
-        this.registerPlay(position);
+        this.registerPlay(position, this.adversary);
       }
       this.giveUpBool = false; // ENABLE PLAY AGAIN BUTTON
       this.showNotify(
@@ -304,11 +299,11 @@ export default {
         );
       }
       this.opponentPoints = 0;
-      this.addCommand("BYE");
+      this.addCommand("BYE", this.adversary);
       this.endGame();
     },
     playAgain() {
-      this.addCommand("PLAYAGAIN");
+      this.addCommand("PLAYAGAIN", this.adversary);
       this.showPlayAgainDialog = true;
       this.myTurn = false;
     },
@@ -331,8 +326,8 @@ export default {
         timeout: 3000
       });
     },
-    registerPlay(position) {
-      this.addCommand("PLAY");
+    registerPlay(position, whoPlay) {
+      this.addCommand(`PLAY ${position.position.line} ${position.position.column}`, whoPlay);
 
       let pos = null;
       if (position.position.line === 0 && position.position.column === 0) {
@@ -402,7 +397,7 @@ export default {
           this.myTurn = false;
         })
         .catch(err => {});
-      this.addCommand("PLAYAGAIN");
+      this.addCommand("PLAYAGAIN", this.userInfo);
     },
     giveUp() {
       this.cleanMap();
@@ -421,12 +416,20 @@ export default {
     startGame() {
       axios
         .post("http://localhost:1024/api/client/startGame", this.adversary)
-        .then(response => {});
+        .then(response => {
+          this.userInfo = {
+            ip: response.data.user_ip,
+            user: response.data.user_name,
+            port: response.data.user_port
+            }
+          this.addCommand("START", this.userInfo)
+        });
       this.users.forEach(cont => {
         cont.selected = false;
       });
       this.$refs.playersBar.setPlayFalse();
       this.awaitPlayResponse = true;
+     
     },
     SelectPlayer(contact) {
       if (contact.selected) {
@@ -454,7 +457,7 @@ export default {
             })
             .then(res => {})
             .catch(res => {});
-          this.addCommand("PLAY");
+          this.addCommand(`PLAY ${position.line} ${position.column}`, this.userInfo);
           // SEND POSITION
           // ON POSITION CONFIRMED DO:
           position.text = this.ticTacToeMarkers[0];
@@ -495,9 +498,15 @@ export default {
         .post("http://localhost:1024/api/client/gameAccepted", {
           opponent: this.adversary
         })
-        .then(res => {})
+        .then(response => {
+          this.userInfo = {
+            ip: response.data.user_ip,
+            user: response.data.user_name,
+            port: response.data.user_port
+            }
+        })
         .catch(e => {});
-      this.addCommand("PLAY");
+      this.addCommand("START", this.adversary);
       //send to backend start
     },
     rejectMatch() {
@@ -507,7 +516,7 @@ export default {
         })
         .then(res => {})
         .catch(err => {});
-      this.addCommand("BYE");
+      this.addCommand("BYE", this.userInfo);
       this.endGame();
     },
     endGame() {
@@ -525,11 +534,11 @@ export default {
       this.showStartGameDialog = false;
       this.showPlayAgainDialog = false;
     },
-    addCommand(cmd) {
+    addCommand(cmd, whoSend) {
       if (this.makeGame) {
         let msg = {
           id: this.commands.length,
-          text: "<" + cmd + ">"
+          text: "<" + whoSend.user + ' ' + whoSend.ip + ' ' + whoSend.port + ' ' + cmd + ">"
         };
         this.commands.push(msg);
       } else {
@@ -544,6 +553,7 @@ export default {
         .get("http://localhost:1024/api/client/playAgain")
         .then(res => {})
         .catch(err => {});
+      this.addCommand("PLAYAGAINACCEPTED", this.userInfo)
     }
   },
   beforeDestroy() {

@@ -70,6 +70,10 @@ export default {
     },
     giveUpBool: {
       type: Boolean
+    },
+    userInfo:{
+      type:Object,
+      required:true
     }
   },
   data() {
@@ -90,7 +94,7 @@ export default {
           sent: false
         };
         this.messages.push(messageObject);
-        this.$emit('addCommand', 'MSG')
+        this.$emit('addCommand', `MSG ${message}`, this.opponent)
       }, 1000);
     }
   },
@@ -110,8 +114,8 @@ export default {
           })
           .then(res => {
             this.messages.push(messageObject);
+            this.$emit('addCommand', `MSG ${this.chatMessage}`, this.userInfo)
             this.chatMessage = "";
-            this.$emit('addCommand', 'MSG')
           })
           .catch(err => {});
       }

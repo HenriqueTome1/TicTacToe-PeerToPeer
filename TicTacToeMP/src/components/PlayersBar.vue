@@ -30,23 +30,6 @@
           </q-item-section>-->
         </q-item>
 
-        <q-separator />
-        <q-item-label header>Em jogo</q-item-label>
-
-        <q-item v-for="contact in usersInGame" :key="contact.id" class="q-mb-sm" clickable v-ripple>
-          <q-item-section avatar>
-            <q-avatar color="green" text-color="white">{{ getLetter(contact.name) }}</q-avatar>
-          </q-item-section>
-
-          <q-item-section>
-            <q-item-label>{{ contact.name }}</q-item-label>
-            <!-- <q-item-label caption lines="1">{{ contact.email }}</q-item-label> -->
-          </q-item-section>
-
-          <!-- <q-item-section side>
-          <q-icon name="chat_bubble" color="grey" />
-          </q-item-section>-->
-        </q-item>
       </q-list>
     </q-scroll-area>
     <q-btn v-if="play" class="playBtn" color="green" @click="startGame">Jogar com {{opponent.user}}</q-btn>
@@ -62,11 +45,6 @@ export default {
       default: () => {return []},
       required: true
     },
-    usersInGame: {
-      type: Array,
-      default: () => {return []},
-      required: true
-    }
   },
   data() {
     return {

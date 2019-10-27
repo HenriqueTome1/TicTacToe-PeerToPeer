@@ -2,7 +2,7 @@
   <div class="q-pa-md window-height window-width row justify-center items-center">
     <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md" style="width: 400px">
       <div style="text-align: center; margin: 0px;">
-        <label class="cadText">Regitro no Servidor</label>
+        <label class="cadText">Registro no Servidor</label>
       </div>
       <q-input
         filled
@@ -22,7 +22,7 @@
         lazy-rules
         :rules="[
           val => val !== null && val !== '' || 'Por favor insira a porta para comunicação TCP',
-          val => val > 1023 && val < 65536 || 'Insira uma valor entre 1024 e 65535'
+          val => val > 1025 && val < 65536 || 'Insira uma valor entre 1026 e 65535'
         ]"
       />
 
@@ -75,8 +75,9 @@ export default {
       console.log("socket connected");
     },
     registrationSuccessful() {
+      let ctx = this
       console.log("event fired by a successful user registration");
-      this.$router.push((name = "/game"));
+      ctx.$router.push((name = "/game"));
       // this.getUserList();
     },
     registrationFailed() {
@@ -122,7 +123,7 @@ export default {
 </script>
 <style scoped>
 .cadText {
-  font-size: 5vw;
-  font-family: fantasy;
+  font-size: 45px;
+  font-family: 'Times New Roman';
 }
 </style>

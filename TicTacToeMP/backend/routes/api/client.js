@@ -48,7 +48,7 @@ const server_TCP = net.createServer(function (socket) {
             case "BYE": endMatch(msg); break;
             case "PLAY": doMove(msg); break;
             case "MSG": sendMessage(msg); break;
-            case "gameAccepted": gameAccepted(msg); break;
+            case "GAMEACCEPTED": gameAccepted(msg); break;
             case "OPWIN": opponentWinGame(msg); break;
             case "GAMETIE": gameTie(msg); break;
             case "PLAYAGAIN": playAgain(msg); break;
@@ -93,7 +93,6 @@ function endMatch(msg) {
 
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     io.emit("matchEnd")
-    console.log('match end emited')
     interval_presence = setInterval(doPresence, 5000);
     interval_list = setInterval(doList, 5000);
 }
@@ -183,7 +182,6 @@ client.on('message', (msg, rinfo) => {
         case "EXIT": dropUser(rinfo); break;
         // default: server.send(['USER NOK'], rinfo.port, rinfo.address, (err) => { }); //default ??? perguntar pro luiz
     }
-    // console.log(msg1.toString())
 });
 
 
@@ -213,9 +211,6 @@ router.post('/', async (req, res) => {
 
     // FUNCAO PARA INICIALIZAR O SERVIDOR TCP
     TCPserverListen()
-    // server_TCP.listen(cadastro.user_port, () => {console.log('Servidor TCP ouvindo na porta ' + cadastro.user_port)});
-    // RESPONDENDO AO FRONT -> TALVEZ EU MUDE ISSO (COM O io) PRA RESPONDER SÓ QUANDO RECEBER A RESPOSTA DO SERVIDOR
-    // res.send(create_user);
     res.send('ok');
 })
 
@@ -269,7 +264,6 @@ function FormatlistUsers(msg) {
     let Ob_id = 0;
     data.forEach(player => {
         if (player[0] === '<') {
-            console.log(player, cadastro)
             player = player.replace("<", "");
             player = player.replace(">", "");
             let newPlayer = player.split(':')
@@ -331,7 +325,7 @@ router.post('/startGame', (req, res) => {
         client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
     })
 
-    res.send('ok');
+    res.send(cadastro);
 })
 
 router.post('/sendMessage', (req, res) => {
@@ -352,10 +346,10 @@ router.post('/gameAccepted', (req, res) => {
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
     client_TCP.connect(opponent.port, opponent.ip, () => {
-        client_TCP.write(`gameAccepted`)
+        client_TCP.write(`GAMEACCEPTED`)
     })
 
-    res.send('ok')
+    res.send(cadastro)
 })
 
 router.post('/play', (req, res) => {
@@ -398,23 +392,5 @@ router.get('/playAgain', (req, res) => {
     client_TCP.write('PLAYAGAINACCEPTED')
     res.send('ok');
 })
-
-// Toda vez que criar iniciar um jogo esse cliente é criado
-
-// opponent info here: porta do oponente e ip do oponente
-// client_TCP.connect(user_port, user_ip, function() {
-// 	console.log('Connected');
-// 	client_TCP.write('Hello, server! Love, Client.');
-// });
-
-// client_TCP.on('data', function(data) {
-// 	console.log('Received: ' + data);
-// 	client_TCP.destroy(); // kill client after server's response
-// });
-
-// client_TCP.on('close', function() {
-// 	console.log('Connection closed');
-// });
-
 
 module.exports = router;
