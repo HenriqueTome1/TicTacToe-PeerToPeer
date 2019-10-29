@@ -241,7 +241,7 @@ export default {
         this.showNotify(
           "yellow",
           "error_outline",
-          `Rodada do jogador ${this.adversary.user}`
+          `Rodada do outro jogador`
         );
       }
     },

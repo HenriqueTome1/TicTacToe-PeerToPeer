@@ -13,6 +13,8 @@ let interval_presence = null;
 let interval_list = null;
 let tcp_listening = false;
 
+let globalSocket = null;
+
 const cadastro = {
     user_name: null,
     user_port: null,
@@ -21,6 +23,8 @@ const cadastro = {
     server_port: null,
     inGame: false
 }
+
+tempPosition = {}
 
 let opponent = null;
 let campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -40,6 +44,7 @@ const server_TCP = net.createServer(function (socket) {
     })
 
     router.post('/gameAccepted', (req, res) => {
+        globalSocket = socket
         campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         cadastro.inGame = true
 
@@ -52,47 +57,48 @@ const server_TCP = net.createServer(function (socket) {
 
         res.send(cadastro)
     })
-
-    router.post('/play', (req, res) => {
-        console.log('sdfgh')
-        let position = {
-            line: req.body.position.line,
-            column: req.body.position.column
-        }
-        if (client_TCP) {
-            client_TCP.write(`PLAY ${position.line} ${position.column}`)
-        } else {
-            socket.write(`PLAY ${position.line} ${position.column}`)
-        }
-
-        // if((position.line >= 0 && position.line < 3) && (position.column >= 0 && position.column < 3)){
-        //     checkForEmptyPos(position)
-        //     client_TCP.write(`PLAY ${position.line} ${position.column}`)
-        // } else {
-
-        // }
-        res.sendStatus(200)
-    })
-
-    router.post('/bye', (req, res) => {
-        cadastro.inGame = false
-        // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
-        campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        if(client_TCP){
-            client_TCP.write('BYE')
-            client_TCP.destroy()
-            client_TCP = null;
-        } else {
-            socket.write("BYE")
-        }
-
-        if (!interval_presence && !interval_list) {
-            interval_presence = setInterval(doPresence, 5000);
-            interval_list = setInterval(doList, 5000);
-        }
-        res.send('ok');
-    })
 });
+
+router.post('/play', (req, res) => {
+    let position = {
+        line: req.body.position.line,
+        column: req.body.position.column
+    }
+    tempPosition = position
+    if (client_TCP) {
+        console.log('PLAY ---> ',position)
+        client_TCP.write(`PLAY ${position.line} ${position.column}`)
+    } else {
+        globalSocket.write(`PLAY ${position.line} ${position.column}`)
+    }
+
+    // if((position.line >= 0 && position.line < 3) && (position.column >= 0 && position.column < 3)){
+    //     checkForEmptyPos(position)
+    //     client_TCP.write(`PLAY ${position.line} ${position.column}`)
+    // } else {
+
+    // }
+    res.sendStatus(200)
+})
+
+router.post('/bye', (req, res) => {
+    cadastro.inGame = false
+    // RESETA O CAMPO E ENVIA UM BYE PRO ADVERSÁRIO
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    if (client_TCP) {
+        client_TCP.write('BYE')
+        client_TCP.destroy()
+        client_TCP = null;
+    } else {
+        globalSocket.write("BYE")
+    }
+
+    if (!interval_presence && !interval_list) {
+        interval_presence = setInterval(doPresence, 5000);
+        interval_list = setInterval(doList, 5000);
+    }
+    res.send('ok');
+})
 
 function startMatch(msg, socket) {
     if (msg.includes("START OK")) {
@@ -109,7 +115,7 @@ function startMatch(msg, socket) {
 
 function ifValid(position, socket) {
     if ((campo[position.line][position.column] != 0) || ((position.line < 0 || position.line >= 3) || (position.column < 0 || position.column >= 3))) {
-        if(client_TCP){
+        if (client_TCP) {
             client_TCP.write("PLAY NOK")
         } else {
             socket.write('PLAY NOK')
@@ -120,7 +126,7 @@ function ifValid(position, socket) {
     }
 }
 
-function verifyWin(){
+function verifyWin(value) {
     if ((campo[0][0] === value && campo[0][1] === value && campo[0][2] === value) ||
         (campo[1][0] === value && campo[1][1] === value && campo[1][2] === value) ||
         (campo[2][0] === value && campo[2][1] === value && campo[2][2] === value) ||
@@ -140,37 +146,38 @@ function doMove(msg, socket) {
     }
     if (msg.includes("PLAY NOK")) {
         playNokCounter++
-        if(playNokCounter === 3){
-            if(client_TCP){
+        if (playNokCounter === 3) {
+            if (client_TCP) {
                 client_TCP.write("BYE")
             } else {
                 socket.write("BYE")
             }
-            io,emit("byePlayNok")
+            io, emit("byePlayNok")
         } else {
             io.emit("playNok");
         }
     } else if (msg.includes("PLAY OK")) {
-        campo[position.line][position.column] = 1;
+        console.log(position)
+        campo[tempPosition.line][tempPosition.column] = 1;
         playNokCounter = 0;
-        if(verifyWin()){
+        if (verifyWin(1)) {
             io.emit("youWin");
-        } else if(verifyTie()){
+        } else if (verifyTie()) {
             io.emit("gameTie");
         } else {
             io.emit("playOk");
         }
     } else {
         if (ifValid(position, socket)) {
-            if(client_TCP){
+            if (client_TCP) {
                 client_TCP.write("PLAY OK")
             } else {
                 socket.write("PLAY OK")
             }
 
-            if(verifyWin()){
+            if (verifyWin(1)) {
                 io.emit("opponentWin");
-            } else if(verifyTie()){
+            } else if (verifyTie()) {
                 io.emit("gameTie");
             }
             campo[position.line][position.column] = 2;
@@ -184,7 +191,8 @@ function doMove(msg, socket) {
 
 function endMatch(msg) {
     cadastro.inGame = false
-    if(client_TCP){
+    globalSocket = null
+    if (client_TCP) {
         client_TCP.destroy()
         client_TCP = null;
     }
@@ -357,31 +365,31 @@ function startClientTCPListner() {
     }
 }
 
-    // ROTA PARA INICIAR O JOGO
-    // AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
-    router.post('/startGame', (req, res) => {
-        campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+// ROTA PARA INICIAR O JOGO
+// AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
+router.post('/startGame', (req, res) => {
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
-        opponent = req.body;
+    opponent = req.body;
 
-        cadastro.inGame = true
+    cadastro.inGame = true
 
-        clearInterval(interval_presence);
-        clearInterval(interval_list);
-        interval_presence = null;
-        interval_list = null;
+    clearInterval(interval_presence);
+    clearInterval(interval_list);
+    interval_presence = null;
+    interval_list = null;
 
-        if (!client_TCP) {
-            client_TCP = new net.Socket();
-            startClientTCPListner()
-        }
-        // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
-        client_TCP.connect(opponent.port, opponent.ip, () => {
-            // client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
-            client_TCP.write(`START ${cadastro.user_name}`)
-        })
-
-        res.send(cadastro);
+    if (!client_TCP) {
+        client_TCP = new net.Socket();
+        startClientTCPListner()
+    }
+    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
+    client_TCP.connect(opponent.port, opponent.ip, () => {
+        // client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
+        client_TCP.write(`START ${cadastro.user_name}`)
     })
 
-    module.exports = router;
+    res.send(cadastro);
+})
+
+module.exports = router;
