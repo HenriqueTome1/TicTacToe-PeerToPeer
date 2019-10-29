@@ -157,7 +157,7 @@ export default {
       this.makeGame = false;
     },
     youWin() {
-      this.showNotify("green", "thumb_up", "Parabéns voce o jogo");
+      this.showNotify("green", "thumb_up", "Parabéns voce venceu o jogo");
       this.makeGame = false;
     },
     opponentWin() {
@@ -173,6 +173,7 @@ export default {
       this.myTurn = false;
     },
     myTurn(position) {
+        console.log(position)
       this.registerPlay(position, false);
       this.myTurn = true;
     },
@@ -268,15 +269,18 @@ export default {
       }
 
       let symbol = "";
+      let color = ''
       if (myPlay) {
         symbol = "X";
+        color = "black"
       } else {
         symbol = "O";
+        color = "red"
       }
       this.positions.forEach(position => {
         if (position.id === pos) {
           position.text = symbol;
-          position.color = "red";
+          position.color = color;
         }
       });
     },

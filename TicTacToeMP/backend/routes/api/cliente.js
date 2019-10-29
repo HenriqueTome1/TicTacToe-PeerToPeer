@@ -161,8 +161,20 @@ function doMove(msg, socket) {
         playNokCounter = 0;
         if (verifyWin(1)) {
             io.emit("youWin");
+            cadastro.inGame = false
+            if(client_TCP){
+                client_TCP.write("BYE")
+            } else {
+                socket.write("BYE")
+            }
         } else if (verifyTie()) {
             io.emit("gameTie");
+            cadastro.inGame = false
+            if(client_TCP){
+                client_TCP.write("BYE")
+            } else {
+                socket.write("BYE")
+            }
         } else {
             io.emit("playOk", tempPosition);
         }
@@ -173,14 +185,13 @@ function doMove(msg, socket) {
             } else {
                 socket.write("PLAY OK")
             }
-
-            if (verifyWin(1)) {
+            campo[position.line][position.column] = 2;
+            if (verifyWin(2)) {
                 io.emit("opponentWin");
             } else if (verifyTie()) {
                 io.emit("gameTie");
             }
-            campo[position.line][position.column] = 2;
-            io.emit('myTurn', { position })
+            io.emit('myTurn', position)
         }
 
     }
