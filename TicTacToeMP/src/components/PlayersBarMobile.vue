@@ -4,8 +4,8 @@
       <q-toolbar-title style="text-align: center;">Players</q-toolbar-title>
     </q-toolbar>
 
-    <q-scroll-area style="width: 100vw;">
-      <q-list>
+    <q-scroll-area style="height: 85vh; width: 100vw;">
+      <q-list bordered style="height: 85vh">
         <q-item-label header style="text-align: center;">Jogadores disponíveis</q-item-label>
         <q-item
           :active="user.selected"

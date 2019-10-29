@@ -96,13 +96,15 @@ export default {
     stopCliet() {
       console.log("stopping");
       axios
-        .delete("http://localhost:1024/api/client")
+        // .delete("http://localhost:1024/api/client")
+        .delete("http://localhost:1024/api/cliente")
         .then(r => {})
         .catch(err => {});
     },
     onSubmit() {
       axios
-        .post("http://localhost:1024/api/client", {
+        // .post("http://localhost:1024/api/client", {
+        .post("http://localhost:1024/api/cliente", {
           user_name: this.user_name,
           user_port: this.user_port,
           server_address: this.server_ip,

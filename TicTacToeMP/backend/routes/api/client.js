@@ -18,7 +18,8 @@ const cadastro = {
     user_port: null,
     user_ip: ip.address(),
     server_address: null,
-    server_port: null
+    server_port: null,
+    inGame: false
 }
 
 let opponent = null;
@@ -48,32 +49,65 @@ const server_TCP = net.createServer(function (socket) {
             case "BYE": endMatch(msg); break;
             case "PLAY": doMove(msg); break;
             case "MSG": sendMessage(msg); break;
-            case "GAMEACCEPTED": gameAccepted(msg); break;
+            // case "GAMEACCEPTED": gameAccepted(msg); break;
             case "OPWIN": opponentWinGame(msg); break;
             case "GAMETIE": gameTie(msg); break;
             case "PLAYAGAIN": playAgain(msg); break;
             case "PLAYAGAINACCEPTED": playAgainAccepted(msg); break;
         }
     })
+
+    router.post('/gameAccepted', (req, res) => {
+        // if(!client_TCP){
+        //     client_TCP = new net.Socket();
+        // }
+        // opponent = req.body.opponent;
+        cadastro.inGame = true
+
+        clearInterval(interval_presence);
+        clearInterval(interval_list);
+        interval_presence = null;
+        interval_list = null;
+        // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
+        // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
+        
+        // client_TCP.connect(opponent.port, opponent.ip, () => {
+        //     client_TCP.write(`START OK`)
+        // })
+
+        socket.write('START OK')
+    
+        res.send(cadastro)
+    })
 });
 
 function startMatch(msg) {
-    opponent = {
-        user: msg.toString().split(" ")[1],
-        ip: msg.toString().split(" ")[2],
-        port: parseInt(msg.toString().split(" ")[3]),
+    console.log(info.remoteAddress)
+    console.log(info.remotePort)
+    if(msg.includes("START OK")){
+        io.emit("gameAccepted")
+    } else {
+        if(!cadastro.inGame){
+            opponent = {
+                user: msg.toString().split(" ")[1],
+                ip: msg.toString().split(" ")[2],
+                port: parseInt(msg.toString().split(" ")[3]),
+            }
+        
+            io.emit("startMatch", { user: msg.toString().split(" ")[1], opponent: opponent });
+        }   else {
+            // TODO: send BYE
+        }
     }
-
-    io.emit("startMatch", { user: msg.toString().split(" ")[1], opponent: opponent });
 }
 
 function sendMessage(msg) {
     io.emit("receiveMessage", { msg: msg.toString() })
 }
 
-function gameAccepted(msg) {
-    io.emit("gameAccepted")
-}
+// function gameAccepted(msg) {
+//     io.emit("gameAccepted")
+// }
 
 function doMove(msg) {
     let position = {
@@ -201,7 +235,7 @@ router.post('/', async (req, res) => {
     cadastro.server_port = req.body.server_port;
 
     // ENVIANDO O CADASTRO PARA O SERVER
-    client.send([`USER ${cadastro.user_name} ${cadastro.user_port}`], cadastro.server_port, `${cadastro.server_address}`, (err) => { });
+    client.send([`USER ${cadastro.user_name} ${cadastro.user_port}`], cadastro.server_port, cadastro.server_address, (err) => { });
 
     // SETANDO 2 FUNÇÕES PARA FICAREM REPETINDO A CADA 5 SEGUNDOS
     // A QUE FICA PINGANDO NO SERVIDOR PRA FALAR QUE O USUARIO ESTÁ PRESENTE
@@ -250,7 +284,7 @@ function doList() {
 
 //FUNÇÃO QUE FICARÁ REPETINDO PARA INDICAR AO SERVIDOR UDP QUE O USUARIO ESTÁ ATIVO
 function doPresence() {
-    client.send([`USER ${cadastro.user_name} ${cadastro.user_port}`], cadastro.server_port, `${cadastro.server_address}`, (err) => {
+    client.send([`USER ${cadastro.user_name} ${cadastro.user_port}`], cadastro.server_port, cadastro.server_address, (err) => {
     });
 }
 
@@ -262,10 +296,11 @@ function FormatlistUsers(msg) {
     let data = msg.toString().split(' ')
     message = message + data[0] + ' ' + data[1];
     let Ob_id = 0;
-    data.forEach(player => {
-        if (player[0] === '<') {
-            player = player.replace("<", "");
-            player = player.replace(">", "");
+
+    data.forEach((player, index) => {
+        if (index > 1 && player != '') {
+            // player = player.replace("<", "");
+            // player = player.replace(">", "");
             let newPlayer = player.split(':')
             let obj = {
                 id: Ob_id,
@@ -306,11 +341,29 @@ function sendServerResponse(msg, rinfo) {
 // CLIENTE TCP
 let client_TCP = null
 
+if(client_TCP){
+    client_TCP.on('data', (msg) => {
+        switch (msg.toString().split(" ")[0]) {
+            case "START": startMatch(msg); break;
+            case "BYE": endMatch(msg); break;
+            case "PLAY": doMove(msg); break;
+            case "MSG": sendMessage(msg); break;
+            // case "GAMEACCEPTED": gameAccepted(msg); break;
+            case "OPWIN": opponentWinGame(msg); break;
+            case "GAMETIE": gameTie(msg); break;
+            case "PLAYAGAIN": playAgain(msg); break;
+            case "PLAYAGAINACCEPTED": playAgainAccepted(msg); break;
+        }
+    })
+}
+
 // ROTA PARA INICIAR O JOGO
 // AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
 router.post('/startGame', (req, res) => {
 
     opponent = req.body;
+
+    cadastro.inGame = true
 
     clearInterval(interval_presence);
     clearInterval(interval_list);
@@ -322,7 +375,8 @@ router.post('/startGame', (req, res) => {
     }
     // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
     client_TCP.connect(opponent.port, opponent.ip, () => {
-        client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
+        // client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
+        client_TCP.write(`START ${cadastro.user_name}`)
     })
 
     res.send(cadastro);
@@ -331,25 +385,6 @@ router.post('/startGame', (req, res) => {
 router.post('/sendMessage', (req, res) => {
     client_TCP.write(`MSG ${req.body.message}`)
     res.send('ok')
-})
-
-router.post('/gameAccepted', (req, res) => {
-    if(!client_TCP){
-        client_TCP = new net.Socket();
-    }
-    opponent = req.body.opponent;
-
-    clearInterval(interval_presence);
-    clearInterval(interval_list);
-    interval_presence = null;
-    interval_list = null;
-    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
-    // TODO: DECIDIR QUEM VAI COMEÇAR O JOGO (ATUALMENTE QUEM PEDE PELO JOGO INICIA)
-    client_TCP.connect(opponent.port, opponent.ip, () => {
-        client_TCP.write(`GAMEACCEPTED`)
-    })
-
-    res.send(cadastro)
 })
 
 router.post('/play', (req, res) => {
