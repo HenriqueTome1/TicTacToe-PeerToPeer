@@ -168,11 +168,12 @@ export default {
       this.showNotify("yellow", "error_outline", `Jogo empatou`);
       this.makeGame = false;
     },
-    playOk() {
+    playOk(position) {
+      this.registerPlay(position, true);
       this.myTurn = false;
     },
     myTurn(position) {
-      this.registerPlay(position);
+      this.registerPlay(position, false);
       this.myTurn = true;
     },
     matchEnd() {
@@ -218,12 +219,14 @@ export default {
       this.showStartGameDialog = false;
 
       this.myTurn = false;
-      axios.post("http://localhost:1024/api/cliente/gameAccepted")
+      axios
+        .post("http://localhost:1024/api/cliente/gameAccepted")
         .then(response => {})
         .catch(e => {});
     },
     rejectMatch() {
-      axios.post("http://localhost:1024/api/cliente/bye", {
+      axios
+        .post("http://localhost:1024/api/cliente/bye", {
           opponent: this.adversary
         })
         .then(res => {})
@@ -232,68 +235,47 @@ export default {
     },
     changeSimbol(position) {
       if (this.myTurn) {
-        axios.post("http://localhost:1024/api/cliente/play", {
+        axios
+          .post("http://localhost:1024/api/cliente/play", {
             position: position
           })
           .then(res => {})
           .catch(res => {});
       } else {
-        this.showNotify(
-          "yellow",
-          "error_outline",
-          `Rodada do outro jogador`
-        );
+        this.showNotify("yellow", "error_outline", `Rodada do outro jogador`);
       }
     },
-    registerPlay(position) {
+    registerPlay(position, myPlay) {
       let pos = null;
-      if (position.position.line === 0 && position.position.column === 0) {
+      if (position.line === 0 && position.column === 0) {
         pos = 0;
-      } else if (
-        position.position.line === 0 &&
-        position.position.column === 1
-      ) {
+      } else if (position.line === 0 && position.column === 1) {
         pos = 1;
-      } else if (
-        position.position.line === 0 &&
-        position.position.column === 2
-      ) {
+      } else if (position.line === 0 && position.column === 2) {
         pos = 2;
-      } else if (
-        position.position.line === 1 &&
-        position.position.column === 0
-      ) {
+      } else if (position.line === 1 && position.column === 0) {
         pos = 3;
-      } else if (
-        position.position.line === 1 &&
-        position.position.column === 1
-      ) {
+      } else if (position.line === 1 && position.column === 1) {
         pos = 4;
-      } else if (
-        position.position.line === 1 &&
-        position.position.column === 2
-      ) {
+      } else if (position.line === 1 && position.column === 2) {
         pos = 5;
-      } else if (
-        position.position.line === 2 &&
-        position.position.column === 0
-      ) {
+      } else if (position.line === 2 && position.column === 0) {
         pos = 6;
-      } else if (
-        position.position.line === 2 &&
-        position.position.column === 1
-      ) {
+      } else if (position.line === 2 && position.column === 1) {
         pos = 7;
-      } else if (
-        position.position.line === 2 &&
-        position.position.column === 2
-      ) {
+      } else if (position.line === 2 && position.column === 2) {
         pos = 8;
       }
 
+      let symbol = "";
+      if (myPlay) {
+        symbol = "X";
+      } else {
+        symbol = "O";
+      }
       this.positions.forEach(position => {
         if (position.id === pos) {
-          position.text = this.ticTacToeMarkers[1];
+          position.text = symbol;
           position.color = "red";
         }
       });

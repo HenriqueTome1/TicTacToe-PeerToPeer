@@ -157,7 +157,6 @@ function doMove(msg, socket) {
             io.emit("playNok");
         }
     } else if (msg.includes("PLAY OK")) {
-        console.log(position)
         campo[tempPosition.line][tempPosition.column] = 1;
         playNokCounter = 0;
         if (verifyWin(1)) {
@@ -165,7 +164,7 @@ function doMove(msg, socket) {
         } else if (verifyTie()) {
             io.emit("gameTie");
         } else {
-            io.emit("playOk");
+            io.emit("playOk", tempPosition);
         }
     } else {
         if (ifValid(position, socket)) {
