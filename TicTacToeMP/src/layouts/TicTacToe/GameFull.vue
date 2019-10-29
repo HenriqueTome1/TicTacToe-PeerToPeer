@@ -6,6 +6,7 @@
       :users="users"
       @selectedPlayer="playerSelected"
       @startGame="startGame"
+      @disconnect="disconnect"
     ></players-bar-mobile>
 
     <start-game-dialog v-if="awaitPlayResponse" :player="opponent.user" awaitingPlayerResponse></start-game-dialog>
@@ -19,6 +20,7 @@
     ></start-game-dialog>
 
     <div v-if="makeGame" class="col window-height window-width row justify-center items-center">
+        <q-btn color="red" class="giveUpBtn" @click="rejectMatch">Desistir</q-btn>
       <game-board :positions="positions" @changeSimbol="changeSimbol"></game-board>
     </div>
   </div>
@@ -304,4 +306,11 @@ export default {
 </script>
 
 <style>
+.giveUpBtn {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 30px;
+}
 </style>

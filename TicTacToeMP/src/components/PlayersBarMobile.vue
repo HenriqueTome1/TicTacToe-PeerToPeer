@@ -2,6 +2,7 @@
   <div class="q-pa-md playersList">
      <q-toolbar class="bg-primary text-white shadow-2">
       <q-toolbar-title style="text-align: center;">Players</q-toolbar-title>
+      <q-btn dense color="red" @click="$emit('disconnect')">Desconectar</q-btn>
     </q-toolbar>
 
     <q-scroll-area style="height: 85vh; width: 100vw;">

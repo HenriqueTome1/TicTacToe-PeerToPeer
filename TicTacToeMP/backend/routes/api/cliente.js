@@ -151,6 +151,7 @@ function doMove(msg, socket) {
             } else {
                 socket.write("BYE")
             }
+            endMatch()
             io.emit("byePlayNok")
         } else {
             io.emit("playNok");
