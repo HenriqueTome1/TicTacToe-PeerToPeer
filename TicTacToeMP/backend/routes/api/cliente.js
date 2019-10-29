@@ -35,6 +35,7 @@ io_server.listen(1025);
 
 // SERVER TCP
 const server_TCP = net.createServer(function (socket) {
+    globalSocket = socket
     socket.on('data', (msg) => {
         switch (msg.toString().split(" ")[0]) {
             case "START": startMatch(msg, socket); break;
@@ -44,7 +45,6 @@ const server_TCP = net.createServer(function (socket) {
     })
 
     router.post('/gameAccepted', (req, res) => {
-        globalSocket = socket
         campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
         cadastro.inGame = true
 

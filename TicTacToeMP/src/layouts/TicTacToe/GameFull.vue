@@ -159,6 +159,7 @@ export default {
     youWin() {
       this.showNotify("green", "thumb_up", "Parabéns voce venceu o jogo");
       this.makeGame = false;
+      this.cleanMap();
     },
     opponentWin() {
       this.showNotify("red", "thumb_down", "Que azar voce perdeu o jogo");
@@ -173,7 +174,6 @@ export default {
       this.myTurn = false;
     },
     myTurn(position) {
-        console.log(position)
       this.registerPlay(position, false);
       this.myTurn = true;
     },
@@ -187,6 +187,11 @@ export default {
       this.positions.forEach(position => {
         position.text = "";
       });
+      this.makeGame = false;
+      this.opponent = {};
+      this.awaitPlayResponse = false;
+      this.showStartGameDialog = false;
+      this.myTurn = true;
     },
     showNotify(color, icon, message) {
       let textColor = "black";
