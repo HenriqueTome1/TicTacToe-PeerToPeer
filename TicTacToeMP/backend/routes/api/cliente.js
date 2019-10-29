@@ -54,6 +54,7 @@ const server_TCP = net.createServer(function (socket) {
     })
 
     router.post('/play', (req, res) => {
+        console.log('sdfgh')
         let position = {
             line: req.body.position.line,
             column: req.body.position.column

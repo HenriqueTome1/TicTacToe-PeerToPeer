@@ -18,7 +18,9 @@
       @reject="rejectMatch"
     ></start-game-dialog>
 
-    <game-board v-if="makeGame" :positions="positions" @changeSimbol="changeSimbol"></game-board>
+    <div v-if="makeGame" class="col window-height window-width row justify-center items-center">
+      <game-board :positions="positions" @changeSimbol="changeSimbol"></game-board>
+    </div>
   </div>
 </template>
 
@@ -26,12 +28,14 @@
 /* eslint-disable */
 import PlayersBarMobile from "components/PlayersBarMobile";
 import StartGameDialog from "components/StartGameDialog";
+import GameBoard from "components/GameBoard";
 import axios from "axios";
 
 export default {
   components: {
     PlayersBarMobile,
-    StartGameDialog
+    StartGameDialog,
+    GameBoard
   },
   data() {
     return {
@@ -214,24 +218,21 @@ export default {
       this.showStartGameDialog = false;
 
       this.myTurn = false;
-      axios
-        .post("http://localhost:1024/api/cliente/gameAccepted")
+      axios.post("http://localhost:1024/api/cliente/gameAccepted")
         .then(response => {})
         .catch(e => {});
     },
-    rejectMatch(){
-        axios
-        .post("http://localhost:1024/api/cliente/bye", {
+    rejectMatch() {
+      axios.post("http://localhost:1024/api/cliente/bye", {
           opponent: this.adversary
         })
         .then(res => {})
         .catch(err => {});
-        this.cleanMap()
+      this.cleanMap();
     },
     changeSimbol(position) {
       if (this.myTurn) {
-        axios
-          .post("http://localhost:1024/api/cliente/play", {
+        axios.post("http://localhost:1024/api/cliente/play", {
             position: position
           })
           .then(res => {})
