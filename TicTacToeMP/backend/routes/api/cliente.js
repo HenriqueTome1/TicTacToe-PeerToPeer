@@ -284,7 +284,7 @@ router.get('/', (req, res) => {
 // "delete" player
 router.delete('/', (req, res) => {
     // ROTA PARA SAIR DO JOGO, E POR CONSEQUENCIA DO SERVIDOR
-
+    cadastro.inGame = false
     // ENVIA O COMANDO PARA O SERVER UDP
     client.send(['EXIT'], cadastro.server_port, cadastro.server_address, (err) => { });
 
