@@ -43,21 +43,21 @@ const server_TCP = net.createServer(function (socket) {
             case "PLAY": doMove(msg, socket); break;
         }
     })
-
-    router.post('/gameAccepted', (req, res) => {
-        campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        cadastro.inGame = true
-
-        clearInterval(interval_presence);
-        clearInterval(interval_list);
-        interval_presence = null;
-        interval_list = null;
-
-        socket.write('START OK')
-
-        res.send(cadastro)
-    })
 });
+
+router.post('/gameAccepted', (req, res) => {
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    cadastro.inGame = true
+
+    clearInterval(interval_presence);
+    clearInterval(interval_list);
+    interval_presence = null;
+    interval_list = null;
+
+    globalSocket.write('START OK')
+
+    res.send(cadastro)
+})
 
 router.post('/play', (req, res) => {
     let position = {
@@ -66,7 +66,6 @@ router.post('/play', (req, res) => {
     }
     tempPosition = position
     if (client_TCP) {
-        console.log('PLAY ---> ',position)
         client_TCP.write(`PLAY ${position.line} ${position.column}`)
     } else {
         globalSocket.write(`PLAY ${position.line} ${position.column}`)
@@ -152,7 +151,7 @@ function doMove(msg, socket) {
             } else {
                 socket.write("BYE")
             }
-            io, emit("byePlayNok")
+            io.emit("byePlayNok")
         } else {
             io.emit("playNok");
         }
@@ -164,21 +163,19 @@ function doMove(msg, socket) {
             cadastro.inGame = false
             if(client_TCP){
                 client_TCP.write("BYE")
-                client_TCP.destroy()
-                client_TCP = null
             } else {
                 socket.write("BYE")
             }
+            endMatch()
         } else if (verifyTie()) {
             io.emit("gameTie");
             cadastro.inGame = false
             if(client_TCP){
                 client_TCP.write("BYE")
-                client_TCP.destroy()
-                client_TCP = null
             } else {
                 socket.write("BYE")
             }
+            endMatch()
         } else {
             io.emit("playOk", tempPosition);
         }
