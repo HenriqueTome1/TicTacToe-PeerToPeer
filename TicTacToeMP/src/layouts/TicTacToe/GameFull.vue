@@ -215,9 +215,18 @@ export default {
 
       this.myTurn = false;
       axios
-        .post("http://localhost:1024/api/client/gameAccepted")
+        .post("http://localhost:1024/api/cliente/gameAccepted")
         .then(response => {})
         .catch(e => {});
+    },
+    rejectMatch(){
+        axios
+        .post("http://localhost:1024/api/cliente/bye", {
+          opponent: this.adversary
+        })
+        .then(res => {})
+        .catch(err => {});
+        this.cleanMap()
     },
     changeSimbol(position) {
       if (this.myTurn) {
