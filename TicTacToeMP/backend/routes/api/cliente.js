@@ -164,6 +164,8 @@ function doMove(msg, socket) {
             cadastro.inGame = false
             if(client_TCP){
                 client_TCP.write("BYE")
+                client_TCP.destroy()
+                client_TCP = null
             } else {
                 socket.write("BYE")
             }
@@ -172,6 +174,8 @@ function doMove(msg, socket) {
             cadastro.inGame = false
             if(client_TCP){
                 client_TCP.write("BYE")
+                client_TCP.destroy()
+                client_TCP = null
             } else {
                 socket.write("BYE")
             }
@@ -201,7 +205,6 @@ function doMove(msg, socket) {
 
 function endMatch(msg) {
     cadastro.inGame = false
-    globalSocket = null
     if (client_TCP) {
         client_TCP.destroy()
         client_TCP = null;
