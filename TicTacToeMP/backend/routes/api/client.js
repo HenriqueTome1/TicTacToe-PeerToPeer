@@ -412,7 +412,7 @@ router.post('/bye', (req, res) => {
     }, 300)
 
     if(!interval_presence && !interval_list){
-        interval_presence = setInterval(doPresence, 5000);
+        interval_presence = setInterval(doPresence, 10000);
         interval_list = setInterval(doList, 5000);
     }
     res.send('ok');

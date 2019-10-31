@@ -33,6 +33,15 @@ let playNokCounter = 0
 
 io_server.listen(1025);
 
+
+/**
+ * 
+ * 
+ *  PARTE DO TCP
+ * 
+ */
+
+
 // SERVER TCP
 const server_TCP = net.createServer(function (socket) {
     globalSocket = socket
@@ -44,6 +53,49 @@ const server_TCP = net.createServer(function (socket) {
         }
     })
 });
+
+
+// CLIENTE TCP
+let client_TCP = null
+
+function startClientTCPListner() {
+    if (client_TCP) {
+        client_TCP.on('data', (msg) => {
+            switch (msg.toString().split(" ")[0]) {
+                case "START": startMatch(msg); break;
+                case "BYE": endMatch(msg); break;
+                case "PLAY": doMove(msg); break;
+            }
+        })
+    }
+}
+
+// ROTA PARA INICIAR O JOGO
+// AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
+router.post('/startGame', (req, res) => {
+    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+    opponent = req.body;
+
+    cadastro.inGame = true
+
+    clearInterval(interval_presence);
+    clearInterval(interval_list);
+    interval_presence = null;
+    interval_list = null;
+
+    if (!client_TCP) {
+        client_TCP = new net.Socket();
+        startClientTCPListner()
+    }
+    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
+    client_TCP.connect(opponent.port, opponent.ip, () => {
+        // client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
+        client_TCP.write(`START ${cadastro.user_name}`)
+    })
+
+    res.send(cadastro);
+})
 
 router.post('/gameAccepted', (req, res) => {
     campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -107,7 +159,6 @@ function startMatch(msg, socket) {
             io.emit("startMatch", { user: msg.toString().split(" ")[1] });
         } else {
             socket.write('BYE')
-            // TODO: send BYE
         }
     }
 }
@@ -162,7 +213,7 @@ function doMove(msg, socket) {
         if (verifyWin(1)) {
             io.emit("youWin");
             cadastro.inGame = false
-            if(client_TCP){
+            if (client_TCP) {
                 client_TCP.write("BYE")
             } else {
                 socket.write("BYE")
@@ -171,7 +222,7 @@ function doMove(msg, socket) {
         } else if (verifyTie()) {
             io.emit("gameTie");
             cadastro.inGame = false
-            if(client_TCP){
+            if (client_TCP) {
                 client_TCP.write("BYE")
             } else {
                 socket.write("BYE")
@@ -231,6 +282,25 @@ function verifyTie() {
     }
 }
 
+
+
+
+/**
+ * 
+ * 
+ * 
+ * 
+ *  PARTE DO LISTNER UDP
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+
+
+
 // LISTENER DO SERVER UDP
 client.on('message', (msg, rinfo) => {
     switch (msg.toString().split(" ")[0]) {
@@ -246,10 +316,13 @@ client.on('message', (msg, rinfo) => {
 router.post('/', async (req, res) => {
     // LIMPANDO ESTADOS DE FUNÇÕES QUE FICAM REPETINDO A CADA 5 SEGUNDOS
     // SÓ PRA GARANTIR QUE VAI FUNCIONAR COMO DEVERIA
-    clearInterval(interval_presence);
-    clearInterval(interval_list);
-    interval_presence = null;
-    interval_list = null;
+
+    if (interval_presence && interval_list) {
+        clearInterval(interval_presence);
+        clearInterval(interval_list);
+        interval_presence = null;
+        interval_list = null;
+    }
 
     // SALVANDO INFORMAÇÕES PASSADAS NO CADASTRO
     cadastro.user_name = req.body.user_name;
@@ -272,7 +345,7 @@ router.post('/', async (req, res) => {
 })
 
 function TCPserverListen() {
-    if (!tcp_listening) server_TCP.listen(cadastro.user_port, () => { console.log('Servidor TCP ouvindo na porta ' + cadastro.user_port) });
+        server_TCP.listen(cadastro.user_port, () => { console.log('Servidor TCP ouvindo na porta ' + cadastro.user_port) });
 }
 
 // get all players
@@ -295,8 +368,11 @@ router.delete('/', (req, res) => {
     interval_list = null;
 
     // FINALIZA O SERVIDOR TCP
+    
+    // globalSocket.destroy();
     server_TCP.close();
-    tcp_listening = false;
+    
+    // tcp_listening = false;
     res.send('REMOVED')
 })
 
@@ -359,48 +435,5 @@ function sendServerResponse(msg, rinfo) {
         io.emit("registrationFailed");
     }
 }
-
-
-// CLIENTE TCP
-let client_TCP = null
-
-function startClientTCPListner() {
-    if (client_TCP) {
-        client_TCP.on('data', (msg) => {
-            switch (msg.toString().split(" ")[0]) {
-                case "START": startMatch(msg); break;
-                case "BYE": endMatch(msg); break;
-                case "PLAY": doMove(msg); break;
-            }
-        })
-    }
-}
-
-// ROTA PARA INICIAR O JOGO
-// AQUI PRECISO USAR O io PARA MANDAR MENSAGEM PARA O FRONT MAS NÃO SEI DIREITO COMO ESSE SOCKET TCP FUNCIONA
-router.post('/startGame', (req, res) => {
-    campo = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-
-    opponent = req.body;
-
-    cadastro.inGame = true
-
-    clearInterval(interval_presence);
-    clearInterval(interval_list);
-    interval_presence = null;
-    interval_list = null;
-
-    if (!client_TCP) {
-        client_TCP = new net.Socket();
-        startClientTCPListner()
-    }
-    // client.send([`INGAME`], cadastro.server_port, cadastro.server_address, (err) => { });
-    client_TCP.connect(opponent.port, opponent.ip, () => {
-        // client_TCP.write(`START ${cadastro.user_name} ${cadastro.user_ip} ${cadastro.user_port}`)
-        client_TCP.write(`START ${cadastro.user_name}`)
-    })
-
-    res.send(cadastro);
-})
 
 module.exports = router;
