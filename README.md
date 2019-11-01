@@ -84,7 +84,7 @@ nodemon server.js
 > Inicie o client da aplicação
 
 ```
-Este estará localizado na pasta TicTacToeMP/backend do projeto pelo nome de KompJSlator.postman_collection.json
+Este estará localizado na pasta TicTacToeMP/backend do projeto pelo nome de client.js
 ```
 ```shell
 nodemon client.js
