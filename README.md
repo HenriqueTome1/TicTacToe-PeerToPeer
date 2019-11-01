@@ -1,4 +1,4 @@
-# TIC-TAC_TOE
+# TIC-TAC-TOE
 
 > Implementação do jogo TicTacToeMP um jogo da velha em rede.
 
